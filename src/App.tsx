@@ -1305,7 +1305,7 @@ const App = () => {
                     </span>{' '}
                     ·{' '}
                     <span className="text-teal-300">
-                      {selectedTech.meta?.[filter] || selectedTech.tagline}
+                      {selectedTech.meta?.[filter as keyof typeof selectedTech.meta] || selectedTech.tagline}
                     </span>
                   </div>
                 </div>
@@ -1420,7 +1420,7 @@ const App = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 w-full max-h-[32vh] overflow-y-auto pr-2 custom-scrollbar">
                 {sortedTechniques.map((tech) => {
                   const isSelected = tech.id === selectedTech.id;
-                  const metaText = tech.meta?.[filter] || tech.tagline;
+                  const metaText = tech.meta?.[filter as keyof typeof tech.meta] || tech.tagline;
                   const todaySeconds = (todayLog.techSeconds || {})[tech.id] || 0;
 
                   return (
@@ -1504,7 +1504,7 @@ const App = () => {
                       {tech.name}
                     </h4>
                     <div className="flex gap-2 items-center">
-                      {tech.meta?.[filter] && (
+                      {tech.meta?.[filter as keyof typeof tech.meta] && (
                         <span className="text-[10px] text-teal-400">
                           {tech.meta[filter as keyof typeof tech.meta]}
                         </span>
