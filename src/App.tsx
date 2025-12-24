@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Wind, Volume2, Smartphone, Shield, Moon, ListChecks, Eye, Trash2, Info, RotateCcw, Pause, Play, Square, EyeOff } from 'lucide-react';
-import type { Technique } from './types';
+
 
 import { TECHNIQUES } from './data/techniques';
 import { FILTERS } from './data/filters';
