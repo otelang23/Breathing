@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Wind, Volume2, Smartphone, Shield, Moon, ListChecks, Eye, Trash2, Info, RotateCcw, Pause, Play, Square, EyeOff, Headphones, CloudRain, Activity } from 'lucide-react';
+import { Wind, Volume2, Smartphone, Shield, Moon, ListChecks, Eye, Trash2, RotateCcw, Pause, Play, Square, EyeOff, Headphones, CloudRain, Activity } from 'lucide-react';
 import { Tooltip } from './components/ui/Tooltip';
 
 
