@@ -149,7 +149,7 @@ export const AudioEngine = {
             panner.connect(gainNode);
         }
 
-        let stepGain = 0.06;
+        let stepGain = 0.2;
 
         // Map action -> musical contour
         if (action === 'Inhale' || action === 'Inhale2') {
@@ -240,7 +240,7 @@ export const AudioEngine = {
             nodes.osc = osc;
         }
 
-        const targetGain = (nodes.source ? 0.05 : 0.02) * this.masterVolume;
+        const targetGain = (nodes.source ? 0.15 : 0.08) * this.masterVolume;
         gainNode.gain.setValueAtTime(0, ctx.currentTime);
         gainNode.gain.linearRampToValueAtTime(targetGain, ctx.currentTime + 2);
 
