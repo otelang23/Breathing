@@ -113,7 +113,7 @@ const AppContent = () => {
 
         <div className="flex items-center gap-2 md:gap-3">
           {/* Sound mode selector */}
-          <div className="hidden sm:flex items-center gap-1 bg-white/5 rounded-full px-2 py-1 border border-white/10 hover:border-white/20 transition-colors">
+          <div className="flex items-center gap-1 bg-white/5 rounded-full px-2 py-1 border border-white/10 hover:border-white/20 transition-colors">
             {['silent', 'minimal', 'rich'].map((mode) => (
               <button
                 key={mode}
@@ -141,8 +141,8 @@ const AppContent = () => {
               title={`Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`}
             >
               <div className={`w-4 h-4 rounded-full border border-current ${theme === 'midnight' ? 'bg-slate-900' :
-                  theme === 'ocean' ? 'bg-blue-900' :
-                    theme === 'forest' ? 'bg-green-900' : 'bg-red-900'
+                theme === 'ocean' ? 'bg-blue-900' :
+                  theme === 'forest' ? 'bg-green-900' : 'bg-red-900'
                 }`} />
             </button>
 
