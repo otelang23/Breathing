@@ -13,48 +13,48 @@ export const TechniqueDetail = ({
     filterLabel: string;
 }) => {
     return (
-        <aside className="flex flex-col w-full max-w-xs bg-slate-900/70 border border-slate-800/70 rounded-2xl p-4 gap-3 shadow-lg shadow-black/40">
+        <aside className="flex flex-col w-full max-w-xs bg-surface/70 border border-white/5 rounded-2xl p-4 gap-3 shadow-lg shadow-black/40">
             <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-xl bg-slate-800 text-slate-100">
+                    <div className="p-2 rounded-xl bg-white/10 text-text-main">
                         {getTechniqueIcon(selectedTech.id)}
                     </div>
                     <div>
-                        <h3 className="text-sm font-semibold text-white">
+                        <h3 className="text-sm font-semibold text-text-main">
                             {selectedTech.name}
                         </h3>
-                        <p className="text-[11px] text-slate-400 uppercase tracking-[0.16em]">
+                        <p className="text-[11px] text-text-muted uppercase tracking-[0.16em]">
                             {selectedTech.tagline}
                         </p>
                     </div>
                 </div>
                 <div className="flex flex-col items-end">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-[0.16em]">
+                    <span className="text-[10px] text-text-muted uppercase tracking-[0.16em]">
                         PAS
                     </span>
-                    <span className="text-lg font-mono font-bold text-teal-300">
+                    <span className="text-lg font-mono font-bold text-primary">
                         {selectedTech.pas}
                     </span>
                 </div>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-text-main/80 leading-relaxed">
                 {selectedTech.description}
             </p>
             <div className="flex items-start gap-2 mt-1">
-                <Zap className="w-3 h-3 text-teal-400 mt-[3px]" />
-                <p className="text-xs text-teal-100">{selectedTech.strength}</p>
+                <Zap className="w-3 h-3 text-primary mt-[3px]" />
+                <p className="text-xs text-primary-light">{selectedTech.strength}</p>
             </div>
-            <div className="mt-2 text-[11px] text-slate-500">
-                <span className="font-mono uppercase tracking-[0.16em] text-slate-500">
+            <div className="mt-2 text-[11px] text-text-muted">
+                <span className="font-mono uppercase tracking-[0.16em] text-text-muted">
                     Sorted by {filterLabel}
                 </span>
                 <div className="mt-1 text-xs">
                     Rank{' '}
-                    <span className="font-mono font-semibold text-slate-100">
+                    <span className="font-mono font-semibold text-text-main">
                         #{selectedTech.ranks[filterId as keyof typeof selectedTech.ranks] ?? '–'}
                     </span>{' '}
                     ·{' '}
-                    <span className="text-teal-300">
+                    <span className="text-primary">
                         {selectedTech.meta?.[filterId] || selectedTech.tagline}
                     </span>
                 </div>

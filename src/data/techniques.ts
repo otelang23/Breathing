@@ -51,6 +51,7 @@ export const TECHNIQUES = [
             deepSleep: 'REM Stabilizer',
             sleep: 'REM Stability',
         },
+        entrainmentFreq: 10, // Alpha
         color: 'from-emerald-400 via-teal-500 to-cyan-600',
         steps: [
             { action: 'Inhale', duration: 5500, scale: 1.5, text: 'Inhale (5.5s)', vibration: [40] },
@@ -79,6 +80,7 @@ export const TECHNIQUES = [
             discreet: 'Semi-discreet',
             hrv: 'Sedative focus',
         },
+        entrainmentFreq: 3, // Delta
         color: 'from-indigo-400 via-violet-500 to-purple-600',
         steps: [
             { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Inhale (4s)', vibration: [40] },
@@ -108,6 +110,7 @@ export const TECHNIQUES = [
             discreet: 'Invisible',
             hrv: '⭐⭐⭐⭐',
         },
+        entrainmentFreq: 3, // Delta
         color: 'from-amber-300 via-orange-400 to-red-400',
         steps: [
             { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Belly Out', vibration: [40] },
@@ -136,12 +139,71 @@ export const TECHNIQUES = [
             discreet: 'Invisible',
             sleep: 'Focus (Not Sedative)',
         },
+        entrainmentFreq: 10, // Alpha
         color: 'from-blue-400 via-blue-500 to-blue-600',
         steps: [
             { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Inhale (4s)', vibration: [40] },
             { action: 'Hold', duration: 4000, scale: 1.5, text: 'Hold (4s)', vibration: [20] },
             { action: 'Exhale', duration: 4000, scale: 1.0, text: 'Exhale (4s)', vibration: [40] },
             { action: 'Hold', duration: 4000, scale: 1.0, text: 'Hold (4s)', vibration: [20] },
+        ],
+    },
+    {
+        id: 'resonance_6',
+        name: 'Resonance 6',
+        tagline: 'HRV Builder',
+        description: '4s In, 6s Ex. Maximizes HRV via baroreflex stimulation (6 bpm).',
+        strength: 'Balances nervous system, optimizes HRV',
+        pas: 8.5,
+        ranks: {
+            pas: 2,
+            stress: 2,
+            speed: 3,
+            hrv: 1,
+            sleep: 3,
+            deepSleep: 4,
+            discreet: 3,
+        },
+        meta: {
+            hrv: '⚡⚡⚡ Max',
+            stress: 'Balance',
+            speed: '⏱️ 60s+',
+        },
+        entrainmentFreq: 5, // Theta
+        color: 'from-emerald-400 via-teal-500 to-cyan-600',
+        steps: [
+            { action: 'Inhale', duration: 4000, scale: 1.4, text: 'Inhale (4s)', vibration: [40] },
+            { action: 'Exhale', duration: 6000, scale: 1.0, text: 'Exhale (6s)', vibration: [40] },
+        ],
+    },
+    {
+        id: 'nadi',
+        name: 'Nadi Balance',
+        tagline: 'Alt. Nostril',
+        description: 'Alternate nostril breathing to balance brain hemispheres.',
+        strength: 'Balances brain hemispheres, focuses mind',
+        pas: 8.0,
+        ranks: {
+            pas: 3,
+            stress: 3,
+            speed: 4,
+            hrv: 4,
+            sleep: 4,
+            deepSleep: 5,
+            discreet: 8,
+        },
+        meta: {
+            stress: 'Balance',
+            hrv: 'Focus',
+            discreet: 'Active',
+        },
+        entrainmentFreq: 10, // Alpha
+        color: 'from-amber-400 via-orange-500 to-red-500',
+        steps: [
+            { action: 'Inhale', duration: 4000, scale: 1.3, text: 'Inhale Left', vibration: [30], pan: -1 },
+            { action: 'Exhale', duration: 4000, scale: 1.0, text: 'Exhale Right', vibration: [30], pan: 1 },
+            { action: 'Inhale', duration: 4000, scale: 1.3, text: 'Inhale Right', vibration: [30], pan: 1 },
+            { action: 'Exhale', duration: 4000, scale: 1.0, text: 'Exhale Left', vibration: [30], pan: -1 },
         ],
     },
     {

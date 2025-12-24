@@ -7,6 +7,7 @@ import type { Technique } from '../types';
 interface UseBreathingSessionProps {
     initialTech: Technique;
     soundMode: 'silent' | 'minimal' | 'rich';
+    audioVariant: 'standard' | 'binaural' | 'noise';
     hapticEnabled: boolean;
     onTick?: (techId: string) => void;
     onSleepTrigger?: () => void;
@@ -15,6 +16,7 @@ interface UseBreathingSessionProps {
 export const useBreathingSession = ({
     initialTech,
     soundMode,
+    audioVariant,
     hapticEnabled,
     onTick,
     onSleepTrigger,
@@ -78,6 +80,9 @@ export const useBreathingSession = ({
             action: currentStep.action,
             durationMs: currentStep.duration,
             soundMode,
+            audioVariant,
+            entrainmentFreq: selectedTech.entrainmentFreq,
+            pan: currentStep.pan,
         });
 
         // Haptics
@@ -86,19 +91,19 @@ export const useBreathingSession = ({
             const pattern = currentStep.vibration || 40;
             (navigator as any).vibrate(pattern);
         }
-    }, [currentStepIndex, isActive, selectedTech.id, soundMode, hapticEnabled, currentStep.action, currentStep.duration, currentStep.vibration]);
+    }, [currentStepIndex, isActive, selectedTech.id, soundMode, audioVariant, selectedTech.entrainmentFreq, hapticEnabled, currentStep.action, currentStep.duration, currentStep.vibration]);
 
     // Drone Management
     useEffect(() => {
         if (isActive) {
-            AudioEngine.startDrone(soundMode);
+            AudioEngine.startDrone(soundMode, audioVariant);
         } else {
             AudioEngine.stopDrone();
         }
         return () => {
             AudioEngine.stopDrone();
         };
-    }, [isActive, soundMode]);
+    }, [isActive, soundMode, audioVariant]);
 
     // Global Timer & Logic
     useEffect(() => {

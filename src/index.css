@@ -12,15 +12,56 @@ body {
   margin: 0;
 }
 
+/* Themes */
 :root {
+  /* Default Theme: Midnight */
+  --background: 15 23 42; /* slate-950 */
+  --surface: 30 41 59;    /* slate-800 */
+  --primary: 94 234 212;  /* teal-300 */
+  --primary-light: 45 212 191; /* teal-400 */
+  --primary-dark: 17 94 89;    /* teal-900 */
+  --text-main: 226 232 240;    /* slate-200 */
+  --text-muted: 100 116 139;   /* slate-500 */
+}
 
+.theme-ocean {
+  --background: 11 26 42;      /* deep ocean blue */
+  --surface: 22 58 87;         /* lighter blue surface */
+  --primary: 61 184 255;       /* sky blue */
+  --primary-light: 125 211 252;
+  --primary-dark: 12 74 110;
+  --text-main: 240 249 255;
+  --text-muted: 148 163 184;
+}
+
+.theme-forest {
+  --background: 20 28 20;      /* dark green */
+  --surface: 34 48 34;
+  --primary: 134 239 172;      /* green-300 */
+  --primary-light: 74 222 128;
+  --primary-dark: 20 83 45;
+  --text-main: 240 253 244;
+  --text-muted: 134 146 136;
+}
+
+.theme-sunset {
+  --background: 34 16 20;      /* dark warm */
+  --surface: 76 29 34;
+  --primary: 253 186 116;      /* orange-300 */
+  --primary-light: 251 146 60;
+  --primary-dark: 124 45 18;
+  --text-main: 255 247 237;
+  --text-muted: 168 150 145;
+}
+
+:root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark;
+  color: rgb(var(--text-main));
+  background-color: rgb(var(--background));
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

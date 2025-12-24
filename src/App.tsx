@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Wind, Volume2, Smartphone, Shield, Moon, ListChecks, Eye, Trash2, Info, RotateCcw, Pause, Play, Square, EyeOff } from 'lucide-react';
+import { Wind, Volume2, Smartphone, Shield, Moon, ListChecks, Eye, Trash2, Info, RotateCcw, Pause, Play, Square, EyeOff, Headphones, CloudRain, Activity } from 'lucide-react';
 
 
 import { TECHNIQUES } from './data/techniques';
@@ -25,7 +25,9 @@ const AppContent = () => {
     hapticEnabled, setHapticEnabled,
     officeMode, setOfficeMode,
     sleepMode, setSleepMode,
-    focusMode, setFocusMode
+    focusMode, setFocusMode,
+    audioVariant, setAudioVariant,
+    theme, setTheme
   } = useSettings();
 
   const { todayLog, logSeconds, resetData, compliance } = useDailyLog();
@@ -53,6 +55,7 @@ const AppContent = () => {
   } = useBreathingSession({
     initialTech: TECHNIQUES[0],
     soundMode,
+    audioVariant,
     hapticEnabled,
     onTick: (techId) => logSeconds(techId, 1),
     onSleepTrigger: () => {
@@ -80,35 +83,12 @@ const AppContent = () => {
   const selectedFilterLabel = FILTERS.find((f) => f.id === filter)?.label || 'PAS Score';
   const todayKey = new Date().toISOString().slice(0, 10);
 
-  // In-step counting label logic (simplified for re-implementation)
-  const getStepCountLabel = () => {
-    const id = selectedTech.id;
-    const act = currentStep.action;
-    const p = stepProgress;
-    let total = 0;
-
-    if (id === 'sleep_478') {
-      if (act === 'Inhale') total = 4;
-      else if (act === 'Hold') total = 7;
-      else if (act === 'Exhale') total = 8;
-    } else if (id === 'long_exhale') {
-      if (act === 'Inhale') total = 3;
-      else if (act === 'Exhale') total = 6;
-    } else if (id === 'box') {
-      total = 4;
-    }
-
-    if (total > 0) {
-      const count = Math.min(total, Math.max(1, Math.ceil((p / 100) * total)));
-      return `Count: ${count} / ${total}`;
-    }
-    return null;
-  };
-
-  const stepCountLabel = getStepCountLabel();
+  // Calculate remaining time for the current step
+  const remainingSeconds = Math.ceil((currentStep.duration * (1 - stepProgress / 100)) / 1000);
+  const displaySeconds = remainingSeconds > 0 ? remainingSeconds : 1; // Prevent 0 flash
 
   return (
-    <div className="h-screen w-screen bg-slate-950 text-slate-200 font-sans selection:bg-teal-500/30 relative flex flex-col overflow-y-auto">
+    <div className={`h-screen w-screen bg-background text-text-main font-sans selection:bg-primary/30 relative flex flex-col overflow-y-auto theme-${theme}`}>
       {/* Background */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none" />
       <div
@@ -120,13 +100,13 @@ const AppContent = () => {
         className={`w-full p-4 md:p-6 flex justify-between items-center z-20 relative transition-all duration-400 ${focusMode ? 'opacity-0 -translate-y-6 pointer-events-none' : 'opacity-100 translate-y-0'}`}
       >
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-white to-slate-400 flex items-center justify-center shadow-lg shadow-white/10">
-            <Wind className="text-slate-900 w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-white to-text-muted flex items-center justify-center shadow-lg shadow-white/10">
+            <Wind className="text-background w-5 h-5" />
           </div>
           <div className="flex flex-col leading-none">
-            <span className="text-lg font-bold tracking-tight text-white">Nebra</span>
-            <span className="text-[10px] text-slate-500 font-mono tracking-widest">
-              v5.1 · Modular
+            <span className="text-lg font-bold tracking-tight text-text-main">Nebra</span>
+            <span className="text-[10px] text-text-muted font-mono tracking-widest">
+              v5.2
             </span>
           </div>
         </div>
@@ -148,6 +128,40 @@ const AppContent = () => {
                 {mode === 'rich' && 'Rich'}
               </button>
             ))}
+
+
+            {/* Theme Toggle */}
+            <button
+              onClick={() => {
+                const themes: typeof theme[] = ['midnight', 'ocean', 'forest', 'sunset'];
+                const nextIdx = (themes.indexOf(theme) + 1) % themes.length;
+                setTheme(themes[nextIdx]);
+              }}
+              className="p-1 rounded-full transition-colors text-text-muted hover:text-text-main"
+              title={`Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`}
+            >
+              <div className={`w-4 h-4 rounded-full border border-current ${theme === 'midnight' ? 'bg-slate-900' :
+                  theme === 'ocean' ? 'bg-blue-900' :
+                    theme === 'forest' ? 'bg-green-900' : 'bg-red-900'
+                }`} />
+            </button>
+
+            <div className="w-px h-4 bg-white/10 mx-1" />
+
+            {/* Audio Variant Toggle */}
+            <button
+              onClick={() => {
+                const next = audioVariant === 'standard' ? 'binaural' : audioVariant === 'binaural' ? 'noise' : 'standard';
+                setAudioVariant(next);
+              }}
+              className={`p-1 rounded-full transition-colors ${audioVariant !== 'standard' ? 'text-primary bg-primary/20' : 'text-text-muted hover:text-text-main'}`}
+              title={`Audio: ${audioVariant.charAt(0).toUpperCase() + audioVariant.slice(1)}`}
+            >
+              {audioVariant === 'standard' && <Activity className="w-4 h-4" />}
+              {audioVariant === 'binaural' && <Headphones className="w-4 h-4" />}
+              {audioVariant === 'noise' && <CloudRain className="w-4 h-4" />}
+            </button>
+
             <div className="flex items-center gap-1 ml-2">
               <Volume2 className="w-4 h-4 text-slate-400" />
               <input
@@ -267,8 +281,8 @@ const AppContent = () => {
                     <span
                       key={idx}
                       className={`px-2 py-0.5 rounded-full border text-[10px] font-mono ${match
-                        ? 'border-teal-400 text-teal-300 bg-teal-900/20'
-                        : 'border-slate-700 text-slate-500'
+                        ? 'border-primary text-primary bg-primary/10'
+                        : 'border-white/10 text-text-muted'
                         }`}
                     >
                       {phase === 'Hold2' ? 'Hold' : phase}
@@ -281,15 +295,17 @@ const AppContent = () => {
                 <h2 className="text-2xl md:text-3xl font-bold text-white tracking-wide">
                   {currentStep.text}
                 </h2>
+                {isActive && (
+                  <p className="text-4xl font-mono font-light text-white my-2">
+                    {displaySeconds}
+                  </p>
+                )}
                 <p className="text-xs md:text-sm text-slate-400 font-mono tracking-[0.16em] uppercase">
                   Step {currentStepIndex + 1} / {selectedTech.steps.length} · PAS {selectedTech.pas}
                 </p>
-                {stepCountLabel && (
-                  <p className="text-[11px] text-teal-300 font-mono mt-1">{stepCountLabel}</p>
-                )}
                 {activePreset && (
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Preset: <span className="text-slate-200 font-semibold">{activePreset.label}</span> · Segment {presetSegmentIndex + 1}/{activePreset.segments.length}
+                  <p className="text-[11px] text-text-muted mt-1">
+                    Preset: <span className="text-text-main font-semibold">{activePreset.label}</span> · Segment {presetSegmentIndex + 1}/{activePreset.segments.length}
                   </p>
                 )}
                 {!isActive && !activePreset && (
@@ -302,7 +318,7 @@ const AppContent = () => {
               {focusMode && (
                 <button
                   onClick={() => setFocusMode(false)}
-                  className="mt-6 p-3 rounded-full bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800 backdrop-blur transition-all"
+                  className="mt-6 p-3 rounded-full bg-surface/80 text-text-muted hover:text-text-main hover:bg-surface backdrop-blur transition-all"
                   aria-label="Exit Focus Mode"
                 >
                   <EyeOff className="w-5 h-5" />
@@ -344,15 +360,21 @@ const AppContent = () => {
               </button>
             </div>
 
-            <div className="w-full max-w-3xl grid grid-cols-3 gap-3">
-              <StatCard label="Time" value={formatTime(totalSeconds)} />
-              <StatCard label="Cycles" value={cycleCount} sub={`PAS ${selectedTech.pas}`} />
-              <StatCard label="Evening Protocol" value={`${compliance.doneCount}/${compliance.total}`} sub={compliance.completed ? 'v85-PNS.0 ✓' : 'In progress'} />
+            <div className="w-full max-w-3xl grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="col-span-1 md:col-span-1">
+                <StatCard label="Time" value={formatTime(totalSeconds)} />
+              </div>
+              <div className="col-span-1 md:col-span-1">
+                <StatCard label="Cycles" value={cycleCount} sub={`PAS ${selectedTech.pas}`} />
+              </div>
+              <div className="col-span-2 md:col-span-1">
+                <StatCard label="Evening Protocol" value={`${compliance.doneCount}/${compliance.total}`} sub={compliance.completed ? 'v85-PNS.0 ✓' : 'In progress'} />
+              </div>
             </div>
 
             <div className="w-full max-w-4xl">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs text-slate-500 font-bold uppercase tracking-widest">Preset Routines</h3>
+                <h3 className="text-xs text-text-muted font-bold uppercase tracking-widest">Preset Routines</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {PRESETS.map((preset) => {
@@ -362,14 +384,14 @@ const AppContent = () => {
                     <button
                       key={preset.id}
                       onClick={() => startPreset(preset.id)}
-                      className={`flex items-start gap-2 p-3 rounded-xl border text-left transition-all ${active ? 'bg-teal-900/40 border-teal-400 text-teal-50' : 'bg-slate-900/70 border-slate-800 text-slate-200 hover:border-slate-600 hover:bg-slate-800'}`}
+                      className={`flex items-start gap-2 p-3 rounded-xl border text-left transition-all ${active ? 'bg-primary/20 border-primary text-text-main' : 'bg-surface/70 border-white/5 text-text-main hover:border-white/10 hover:bg-surface'}`}
                     >
-                      <div className={`p-1.5 rounded-lg ${active ? 'bg-teal-400 text-slate-900' : 'bg-slate-800 text-slate-300'}`}>
+                      <div className={`p-1.5 rounded-lg ${active ? 'bg-primary text-background' : 'bg-white/10 text-text-muted'}`}>
                         <Icon className="w-4 h-4" />
                       </div>
                       <div className="flex-1">
                         <div className="text-xs font-semibold">{preset.label}</div>
-                        <div className="text-[11px] text-slate-400 mt-1">{preset.description}</div>
+                        <div className="text-[11px] text-text-muted mt-1">{preset.description}</div>
                       </div>
                     </button>
                   );
@@ -379,8 +401,8 @@ const AppContent = () => {
 
             <div className="w-full">
               <div className="flex justify-between items-end mb-3 ml-1">
-                <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest">Techniques · Sorted by {selectedFilterLabel}</h3>
-                <span className="text-[10px] text-slate-600 font-mono">Log: {todayKey}</span>
+                <h3 className="text-text-muted text-xs font-bold uppercase tracking-widest">Techniques · Sorted by {selectedFilterLabel}</h3>
+                <span className="text-[10px] text-text-muted font-mono">Log: {todayKey}</span>
               </div>
               <TechniqueList
                 techniques={sortedTechniques}

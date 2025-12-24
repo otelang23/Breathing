@@ -20,6 +20,7 @@ describe('useBreathingSession', () => {
             useBreathingSession({
                 initialTech: TECHNIQUES[0],
                 soundMode: 'minimal',
+                audioVariant: 'standard',
                 hapticEnabled: false,
             })
         );
@@ -34,6 +35,7 @@ describe('useBreathingSession', () => {
             useBreathingSession({
                 initialTech: TECHNIQUES[0],
                 soundMode: 'minimal',
+                audioVariant: 'standard',
                 hapticEnabled: false,
             })
         );

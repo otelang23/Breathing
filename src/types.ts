@@ -4,6 +4,7 @@ export interface TechniqueSteps {
     scale: number;
     text: string;
     vibration: number[];
+    pan?: number; // -1 (Left) to 1 (Right)
 }
 
 export interface Technique {
@@ -24,6 +25,7 @@ export interface Technique {
     };
     meta: Record<string, string | undefined>;
     color: string;
+    entrainmentFreq?: number;
     steps: TechniqueSteps[];
 }
 
