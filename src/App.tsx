@@ -107,9 +107,9 @@ const AppContent = () => {
         /* Desktop: Vertical Sidebar on Left */
         md:top-0 md:left-0 md:h-full md:w-24 md:flex-col md:border-r
         /* Mobile: Top Bar */
-        top-0 left-0 w-full h-16 flex-row border-b
+        top-0 left-0 w-full h-16 flex-row border-b overflow-x-auto no-scrollbar md:overflow-y-auto
         
-        flex items-center justify-between px-4 md:py-8
+        flex items-center justify-start md:justify-between px-4 gap-4 md:py-8
         ${theme === 'midnight' ? 'bg-slate-950/60 border-slate-800/50' :
           theme === 'ocean' ? 'bg-blue-950/60 border-blue-900/50' :
             theme === 'forest' ? 'bg-green-950/60 border-green-900/50' : 'bg-red-950/60 border-red-900/50'}
@@ -117,60 +117,62 @@ const AppContent = () => {
       `}>
         {/* Logo / Home */}
         <div className="flex shrink-0">
-          <button
-            onClick={() => setShowInfo(true)}
-            className="group relative p-1 rounded-2xl transition-all duration-300 hover:scale-110 active:scale-95"
-            title="About & Guide"
-          >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold shadow-lg shadow-black/20 ring-1 ring-white/10 group-hover:ring-white/30
+          <Tooltip content="About & Guide" side="right">
+            <button
+              onClick={() => setShowInfo(true)}
+              className="group relative p-1 rounded-2xl transition-all duration-300 hover:scale-110 active:scale-95"
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold shadow-lg shadow-black/20 ring-1 ring-white/10 group-hover:ring-white/30
                ${theme === 'midnight' ? 'bg-gradient-to-br from-teal-400 to-indigo-600' :
-                theme === 'ocean' ? 'bg-gradient-to-br from-cyan-400 to-blue-600' :
-                  theme === 'forest' ? 'bg-gradient-to-br from-emerald-400 to-green-600' : 'bg-gradient-to-br from-orange-400 to-red-600'}
+                  theme === 'ocean' ? 'bg-gradient-to-br from-cyan-400 to-blue-600' :
+                    theme === 'forest' ? 'bg-gradient-to-br from-emerald-400 to-green-600' : 'bg-gradient-to-br from-orange-400 to-red-600'}
             `}>
-              <Wind className="text-white w-6 h-6 drop-shadow-md" />
-            </div>
-          </button>
+                <Wind className="text-white w-6 h-6 drop-shadow-md" />
+              </div>
+            </button>
+          </Tooltip>
         </div>
 
         {/* Center Controls (Theming & Audio) */}
-        <div className="flex md:flex-col items-center gap-3 md:gap-6">
+        <div className="flex shrink-0 md:flex-col items-center gap-3 md:gap-6">
 
           {/* Sound Mode Toggle */}
           <div className="flex md:flex-col items-center gap-1 bg-black/20 rounded-full p-1 border border-white/5 shadow-inner">
             {['silent', 'minimal', 'rich'].map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setSoundMode(mode as any)}
-                title={`Sound Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${soundMode === mode
-                  ? 'bg-white/90 text-slate-900 shadow-sm scale-105'
-                  : 'text-white/40 hover:text-white hover:bg-white/10'
-                  }`}
-              >
-                {mode === 'silent' && <span className="text-[10px] font-bold">OFF</span>}
-                {mode === 'minimal' && <span className="text-[10px] font-bold">MIN</span>}
-                {mode === 'rich' && <span className="text-[10px] font-bold">MAX</span>}
-              </button>
+              <Tooltip key={mode} content={`Sound Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`} side="right">
+                <button
+                  onClick={() => setSoundMode(mode as any)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${soundMode === mode
+                    ? 'bg-white/90 text-slate-900 shadow-sm scale-105'
+                    : 'text-white/40 hover:text-white hover:bg-white/10'
+                    }`}
+                >
+                  {mode === 'silent' && <span className="text-[10px] font-bold">OFF</span>}
+                  {mode === 'minimal' && <span className="text-[10px] font-bold">MIN</span>}
+                  {mode === 'rich' && <span className="text-[10px] font-bold">MAX</span>}
+                </button>
+              </Tooltip>
             ))}
           </div>
 
           <div className="w-px h-8 md:w-8 md:h-px bg-white/10" />
 
           {/* Theme Switcher */}
-          <button
-            onClick={() => {
-              const themes: typeof theme[] = ['midnight', 'ocean', 'forest', 'sunset'];
-              const nextIdx = (themes.indexOf(theme) + 1) % themes.length;
-              setTheme(themes[nextIdx]);
-            }}
-            className="group p-2.5 rounded-full transition-all duration-300 text-white/50 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10"
-            title={`Current Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)} - Click to switch`}
-          >
-            <div className={`w-5 h-5 rounded-full shadow-lg ring-2 ring-white/20 transition-transform group-hover:rotate-45 ${theme === 'midnight' ? 'bg-indigo-500 shadow-indigo-500/50' :
-              theme === 'ocean' ? 'bg-cyan-500 shadow-cyan-500/50' :
-                theme === 'forest' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-orange-500 shadow-orange-500/50'
-              }`} />
-          </button>
+          <Tooltip content={`Current Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`} side="right">
+            <button
+              onClick={() => {
+                const themes: typeof theme[] = ['midnight', 'ocean', 'forest', 'sunset'];
+                const nextIdx = (themes.indexOf(theme) + 1) % themes.length;
+                setTheme(themes[nextIdx]);
+              }}
+              className="group p-2.5 rounded-full transition-all duration-300 text-white/50 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10"
+            >
+              <div className={`w-5 h-5 rounded-full shadow-lg ring-2 ring-white/20 transition-transform group-hover:rotate-45 ${theme === 'midnight' ? 'bg-indigo-500 shadow-indigo-500/50' :
+                theme === 'ocean' ? 'bg-cyan-500 shadow-cyan-500/50' :
+                  theme === 'forest' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-orange-500 shadow-orange-500/50'
+                }`} />
+            </button>
+          </Tooltip>
 
           {/* Audio Variant */}
           <Tooltip content={`Audio: ${audioVariant.charAt(0).toUpperCase() + audioVariant.slice(1)}`} side="right">
@@ -189,7 +191,7 @@ const AppContent = () => {
         </div>
 
         {/* Bottom/Right Controls (Volume & Modes) */}
-        <div className="flex md:flex-col items-center gap-3 md:gap-6">
+        <div className="flex shrink-0 md:flex-col items-center gap-3 md:gap-6">
 
           {/* Vertical Volume Slider (Desktop) / Horizontal (Mobile) */}
           <div className="group flex items-center justify-center p-2 rounded-2xl hover:bg-white/5 transition-colors relative" title="Volume Control">
@@ -242,48 +244,53 @@ const AppContent = () => {
           </Tooltip>
 
           {/* More Menu Items */}
-          <div className="hidden md:flex flex-col gap-4">
-            <button
-              onClick={() => setOfficeMode((p) => !p)}
-              className={`p-2.5 rounded-full transition-all duration-300 ${officeMode ? 'bg-white text-slate-900 shadow-lg shadow-white/20' : 'text-white/40 hover:bg-white/10 hover:text-white'}`}
-              title={`Office Mode: ${officeMode ? 'Active' : 'Inactive'} - Disables distracting flashing`}
-            >
-              <Shield className="w-5 h-5" />
-            </button>
+          <div className="flex md:flex-col gap-3 md:gap-4">
+            <Tooltip content="Office Mode (No Flashing)" side="right">
+              <button
+                onClick={() => setOfficeMode((p) => !p)}
+                className={`p-2.5 rounded-full transition-all duration-300 ${officeMode ? 'bg-white text-slate-900 shadow-lg shadow-white/20' : 'text-white/40 hover:bg-white/10 hover:text-white'}`}
+              >
+                <Shield className="w-5 h-5" />
+              </button>
+            </Tooltip>
 
-            <button
-              onClick={() => setSleepMode((p) => !p)}
-              className={`p-2.5 rounded-full transition-all duration-300 ${sleepMode ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/40' : 'text-white/40 hover:bg-white/10 hover:text-white'}`}
-              title={`Sleep Mode: ${sleepMode ? 'Active' : 'Inactive'} - Auto-fades audio`}
-            >
-              <Moon className="w-5 h-5" />
-            </button>
+            <Tooltip content="Sleep Mode (Auto-Fade)" side="right">
+              <button
+                onClick={() => setSleepMode((p) => !p)}
+                className={`p-2.5 rounded-full transition-all duration-300 ${sleepMode ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/40' : 'text-white/40 hover:bg-white/10 hover:text-white'}`}
+              >
+                <Moon className="w-5 h-5" />
+              </button>
+            </Tooltip>
 
-            <button
-              onClick={() => setShowProtocol(true)}
-              className="p-2.5 rounded-full transition-all duration-300 text-white/40 hover:text-white hover:bg-white/10"
-              title="Open Evening Protocol Checklist"
-            >
-              <ListChecks className="w-5 h-5" />
-            </button>
+            <Tooltip content="Evening Protocol" side="right">
+              <button
+                onClick={() => setShowProtocol(true)}
+                className="p-2.5 rounded-full transition-all duration-300 text-white/40 hover:text-white hover:bg-white/10"
+              >
+                <ListChecks className="w-5 h-5" />
+              </button>
+            </Tooltip>
 
-            <button
-              onClick={() => setFocusMode(true)}
-              className="p-2.5 rounded-full transition-all duration-300 text-white/40 hover:text-white hover:bg-white/10"
-              title="Focus Mode - Hides Interface"
-            >
-              <Eye className="w-5 h-5" />
-            </button>
+            <Tooltip content="Focus Mode" side="right">
+              <button
+                onClick={() => setFocusMode(true)}
+                className="p-2.5 rounded-full transition-all duration-300 text-white/40 hover:text-white hover:bg-white/10"
+              >
+                <Eye className="w-5 h-5" />
+              </button>
+            </Tooltip>
 
-            <button
-              onClick={() => {
-                if (window.confirm('Reset all daily progress?')) resetData();
-              }}
-              className="p-2.5 rounded-full transition-all duration-300 text-white/40 hover:text-red-400 hover:bg-red-500/10"
-              title="Reset All Progress"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
+            <Tooltip content="Reset Progress" side="right">
+              <button
+                onClick={() => {
+                  if (window.confirm('Reset all daily progress?')) resetData();
+                }}
+                className="p-2.5 rounded-full transition-all duration-300 text-white/40 hover:text-red-400 hover:bg-red-500/10"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </Tooltip>
           </div>
         </div>
       </aside>
