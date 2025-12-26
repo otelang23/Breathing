@@ -21,12 +21,11 @@ export class BiofeedbackEngine {
 
     // Signal Processing
     private signalBuffer: number[] = [];
-    private times: number[] = [];
-    private lastFrameTime: number = 0;
+    private readonly times: number[] = [];
     private readonly BUFFER_SIZE = 150; // ~5 seconds at 30fps
 
     // Callback
-    private onHRUpdate: (bpm: number) => void;
+    private readonly onHRUpdate: (bpm: number) => void;
 
     constructor(onUpdate: (bpm: number) => void) {
         this.onHRUpdate = onUpdate;
@@ -74,12 +73,11 @@ export class BiofeedbackEngine {
         this.canvas = null;
     }
 
-    private processFrame = () => {
+    private readonly processFrame = () => {
         if (!this.isActive || !this.video || !this.ctx || !this.canvas) return;
 
         // Draw current frame
         this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
-
         // Region of Interest (ROI) - Center 40% of image (likely forehead/cheeks)
         const roiX = Math.floor(this.canvas.width * 0.3);
         const roiY = Math.floor(this.canvas.height * 0.3);
@@ -126,7 +124,6 @@ export class BiofeedbackEngine {
 
         // 2. Count Peaks (Zero-crossing approach simplified for robustness)
         // Find local maxima
-        let peaks = 0;
         let lastPeakTime = 0;
         const peakTimes: number[] = [];
 
@@ -157,7 +154,6 @@ export class BiofeedbackEngine {
             // Sanity check (human range)
             if (bpm > 40 && bpm < 180) {
                 // Smoothing
-                // console.log(`Raw BPM: ${bpm.toFixed(1)}`);
                 this.onHRUpdate(Math.round(bpm));
             }
         }

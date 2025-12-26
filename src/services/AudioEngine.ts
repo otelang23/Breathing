@@ -237,7 +237,7 @@ export const AudioEngine = {
 
         const gainNode = ctx.createGain();
         gainNode.connect(ctx.destination);
-        const nodes: any = { gain: gainNode };
+        const nodes: { osc?: OscillatorNode; gain?: GainNode; source?: AudioBufferSourceNode } = { gain: gainNode };
 
         if (audioVariant === 'noise') {
             // PINK NOISE DRONE

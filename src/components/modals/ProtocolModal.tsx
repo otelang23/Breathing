@@ -3,13 +3,15 @@ import { X } from 'lucide-react';
 import { EVENING_MANDATORY_THRESHOLDS } from '../../data/thresholds';
 import { TECHNIQUES } from '../../data/techniques';
 
+import type { Technique, DailyLogEntry } from '../../types';
+
 export const ProtocolModal = ({
     todayLog,
     onChangeTechnique,
     onClose,
 }: {
-    todayLog: any;
-    onChangeTechnique: (tech: any) => void;
+    todayLog: DailyLogEntry;
+    onChangeTechnique: (tech: Technique) => void;
     onClose: () => void;
 }) => {
     return (
@@ -47,7 +49,7 @@ export const ProtocolModal = ({
                                 { id: 'coherent', label: 'Coherent Breathing', purpose: 'HRV maximization', dose: '8 min' },
                                 { id: 'diaphragm', label: 'Diaphragmatic', purpose: 'Deep muscle relaxation', dose: '2 min' },
                                 { id: 'sleep_478', label: '4-7-8 Relax', purpose: 'Sleep induction', dose: '1–2 cycles' },
-                            ] as any[]).find((x) => x.id === id)!;
+                            ]).find((x) => x.id === id)!;
 
                             const secs = (todayLog?.techSeconds || {})[id] || 0;
                             const done = secs >= (threshold as number);

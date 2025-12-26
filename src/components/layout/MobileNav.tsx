@@ -1,5 +1,5 @@
 import { Wind, Compass, BarChart2 } from 'lucide-react';
-import { useSettings } from '../../context/SettingsContext';
+import { useSettings } from '../../hooks/useSettings';
 
 type TabId = 'breathe' | 'discover' | 'journey';
 

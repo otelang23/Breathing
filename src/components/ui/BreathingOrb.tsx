@@ -5,8 +5,8 @@ export const BreathingOrb = ({
     color,
     isActive,
     action,
-    duration,
-    progress,
+    segments,
+    currentStepIndex,
 }: {
     scale: number;
     color: string;
@@ -14,9 +14,11 @@ export const BreathingOrb = ({
     action: string;
     duration: number;
     progress: number;
+    segments?: number[];
+    currentStepIndex?: number;
 }) => (
     <div className="relative flex items-center justify-center w-72 h-72 md:w-80 md:h-80">
-        {isActive && <ProgressRing radius={160} stroke={2} progress={progress} />}
+        {isActive && <ProgressRing radius={160} stroke={2} progress={progress} segments={segments} activeSegmentIndex={currentStepIndex} />}
 
         <div
             className={`absolute rounded-full blur-3xl opacity-30 bg-gradient-to-tr ${color} transition-all ease-in-out`}

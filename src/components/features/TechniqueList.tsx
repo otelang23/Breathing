@@ -26,7 +26,7 @@ export const TechniqueList = ({
     techniques: Technique[];
     selectedId: string;
     filterId: string;
-    dailyLog: Record<string, any>;
+    dailyLog: { techSeconds?: Record<string, number> };
     onSelect: (tech: Technique) => void;
 }) => {
     return (
@@ -44,7 +44,7 @@ export const TechniqueList = ({
                             ? 'bg-primary/20 border-primary shadow-lg shadow-black/40'
                             : 'bg-surface/60 border-white/5 hover:bg-surface hover:border-white/10'
                             }`}
-                        aria-pressed={isSelected ? "true" : "false"}
+                        aria-pressed={isSelected ? 'true' : 'false'}
                     >
                         <div className="flex justify-between w-full items-start gap-1">
                             <div

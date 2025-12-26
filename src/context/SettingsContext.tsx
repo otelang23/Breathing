@@ -1,32 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AudioEngine } from '../services/AudioEngine';
-
-export type Theme = 'midnight' | 'ocean' | 'forest' | 'sunset';
-
-type SoundMode = 'silent' | 'minimal' | 'rich';
-
-interface SettingsContextType {
-    theme: Theme;
-    setTheme: (theme: Theme) => void;
-    soundMode: SoundMode;
-    setSoundMode: (mode: SoundMode) => void;
-    volume: number;
-    setVolume: (vol: number) => void;
-    hapticEnabled: boolean;
-    setHapticEnabled: (enabled: boolean | ((prev: boolean) => boolean)) => void;
-    officeMode: boolean;
-    setOfficeMode: (enabled: boolean | ((prev: boolean) => boolean)) => void;
-    sleepMode: boolean;
-    setSleepMode: (enabled: boolean | ((prev: boolean) => boolean)) => void;
-    focusMode: boolean; // Managed here for global UI control? Or local to App?
-    setFocusMode: (enabled: boolean) => void;
-    audioVariant: 'standard' | 'binaural' | 'noise';
-    setAudioVariant: (variant: 'standard' | 'binaural' | 'noise') => void;
-    voiceEnabled: boolean;
-    setVoiceEnabled: (enabled: boolean) => void;
-}
-
-const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+import { SettingsContext, type Theme, type SoundMode } from './SettingsContextDefinition';
 
 export const SettingsProvider = ({ children }: { children: React.ReactNode }) => {
     const [theme, setTheme] = useState<Theme>('midnight');
@@ -84,12 +58,4 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
             {children}
         </SettingsContext.Provider>
     );
-};
-
-export const useSettings = () => {
-    const context = useContext(SettingsContext);
-    if (context === undefined) {
-        throw new Error('useSettings must be used within a SettingsProvider');
-    }
-    return context;
 };

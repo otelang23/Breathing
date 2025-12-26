@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useHealth } from '../services/health/HealthContext';
 import { AudioEngine } from '../services/AudioEngine';
 import { PRESETS } from '../data/presets';
 import { TECHNIQUES } from '../data/techniques';
@@ -89,9 +90,10 @@ export const useBreathingSession = ({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (hapticEnabled && typeof navigator !== 'undefined' && (navigator as any).vibrate) {
             const pattern = currentStep.vibration || 40;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (navigator as any).vibrate(pattern);
         }
-    }, [currentStepIndex, isActive, selectedTech.id, soundMode, audioVariant, selectedTech.entrainmentFreq, hapticEnabled, currentStep.action, currentStep.duration, currentStep.vibration]);
+    }, [currentStepIndex, isActive, selectedTech.id, soundMode, audioVariant, selectedTech.entrainmentFreq, hapticEnabled, currentStep.action, currentStep.duration, currentStep.vibration, currentStep.pan]);
 
     // Drone Management
     useEffect(() => {
@@ -113,6 +115,23 @@ export const useBreathingSession = ({
         onTickRef.current = onTick;
         onSleepTriggerRef.current = onSleepTrigger;
     }, [onTick, onSleepTrigger]);
+
+    // Health Integration
+    const { saveSession } = useHealth();
+
+    // Helper to save data
+    const persistSession = (secs: number, tech: Technique) => {
+        if (secs >= 30) { // Minimum 30s to record
+            saveSession({
+                startTime: new Date(Date.now() - secs * 1000),
+                endTime: new Date(),
+                durationSeconds: secs,
+                techniqueName: tech.name,
+                techniqueId: tech.id,
+                caloriesBurned: Math.floor(secs * 0.05) // approx
+            }).catch(e => console.error("Auto-save failed:", e));
+        }
+    };
 
     // Global Timer & Logic
     useEffect(() => {
@@ -144,6 +163,7 @@ export const useBreathingSession = ({
                                 setCycleCount(0);
                             } else {
                                 // Preset finished
+                                persistSession(totalSeconds + 1, selectedTech); // Save Health Data
                                 setActivePresetId(null);
                                 setIsActive(false);
                             }
@@ -187,6 +207,7 @@ export const useBreathingSession = ({
     };
 
     const resetSession = () => {
+        if (totalSeconds > 0) persistSession(totalSeconds, selectedTech); // Save on reset
         setIsActive(false);
         setCurrentStepIndex(0);
         setCycleCount(0);

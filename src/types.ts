@@ -1,3 +1,5 @@
+import type { ElementType } from 'react';
+
 export interface TechniqueSteps {
     action: string;
     duration: number;
@@ -12,7 +14,21 @@ export interface Technique {
     name: string;
     tagline: string;
     description: string;
+    optimalDuration?: string;
+    tip: string;
+    audioProfile?: {
+        baseFreq: number;
+        binauralBeat: number; // Hz difference
+    };
     strength: string;
+    science?: {
+        mechanism: string;
+        benefits: string[];
+    };
+    transition?: {
+        nextTechId: string;
+        condition: string;
+    };
     pas: number;
     ranks: {
         pas: number;
@@ -22,11 +38,14 @@ export interface Technique {
         sleep: number;
         deepSleep: number;
         discreet: number;
+        [key: string]: number;
     };
     meta: Record<string, string | undefined>;
     color: string;
     entrainmentFreq?: number;
     steps: TechniqueSteps[];
+    categories?: string[];
+    isCustom?: boolean;
 }
 
 export interface PresetSegment {
@@ -38,12 +57,32 @@ export interface Preset {
     id: string;
     label: string;
     description: string;
-    icon: any; // Lucide icon type is complex, leaving explicit any or React.ElementType if possible but usually any in data
+    icon: ElementType; // Lucide icon type is complex, leaving explicit any or React.ElementType if possible but usually any in data
     segments: PresetSegment[];
 }
 
 export interface Filter {
     id: string;
     label: string;
-    icon: any;
+    icon: ElementType;
+}
+
+export interface SessionStats {
+    totalSeconds: number;
+    cycleCount: number;
+    formatTime: (s: number) => string;
+}
+
+export interface DailyLogEntry {
+    techSeconds: Record<string, number>;
+    protocolCompleted: boolean;
+}
+
+export interface DailyLogMap {
+    [date: string]: DailyLogEntry;
+}
+
+export interface UserStats {
+    streak: number;
+    totalMinutes: number;
 }

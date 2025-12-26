@@ -1,11 +1,25 @@
-export const TECHNIQUES = [
+import type { Technique } from '../types';
+
+export const TECHNIQUES: Technique[] = [
     {
         id: 'sigh',
         name: 'Physiological Sigh',
         tagline: 'Panic Button',
         description: 'Double inhale followed by a long exhale. Fastest biological release of stress.',
+        tip: 'Focus on the second inhale—it expands collapsed air sacs. Make the exhale audible.',
         strength: 'Fastest stress relief, reduces HR in ~20 sec',
         pas: 9.8,
+        audioProfile: { baseFreq: 146.83, binauralBeat: 6 }, // Theta
+        categories: ['panic', 'stress', 'balance'],
+        optimalDuration: '1-3 minutes',
+        science: {
+            mechanism: 'Re-inflates collapsed alveoli (air sacs) in the lungs and maximizes CO2 offload, triggering an immediate parasympathetic reset.',
+            benefits: ['Instant Calm', 'Lung Expansion', 'CO2 Offload']
+        },
+        transition: {
+            nextTechId: 'box',
+            condition: 'Once calm (2-3 mins)'
+        },
         ranks: {
             pas: 1,
             stress: 1,
@@ -24,18 +38,27 @@ export const TECHNIQUES = [
         },
         color: 'from-rose-500 via-red-500 to-orange-500',
         steps: [
-            { action: 'Inhale', duration: 2500, scale: 1.3, text: 'Deep Inhale', vibration: [80] },
+            { action: 'Inhale', duration: 2500, scale: 1.3, text: 'Double Inhale', vibration: [80] },
             { action: 'Inhale2', duration: 1000, scale: 1.5, text: 'Top Up', vibration: [40] },
             { action: 'Exhale', duration: 6000, scale: 1.0, text: 'Long Sigh', vibration: [120] },
         ],
+        entrainmentFreq: 0,
     },
     {
         id: 'coherent',
         name: 'Coherent Breathing',
         tagline: 'HRV Builder',
         description: '5.5s rhythm to synchronize heart, lungs, and blood pressure (Resonance).',
+        tip: 'Breathe softly and silently through the nose. Smooth transitions—no pauses.',
         strength: 'Strongest HRV builder, REM stabilizer, best for IQ recovery',
         pas: 9.5,
+        audioProfile: { baseFreq: 110, binauralBeat: 10 }, // Alpha
+        categories: ['hrv', 'balance', 'focus', 'stress'],
+        optimalDuration: '10-20 minutes',
+        science: {
+            mechanism: 'Aligns respiratory rate with the baroreflex resonance frequency (~0.1Hz), maximizing Heart Rate Variability and emotional regulation.',
+            benefits: ['Maximized HRV', 'Emotional Stability', 'Blood Pressure Reg.']
+        },
         ranks: {
             pas: 2,
             stress: 6,
@@ -63,8 +86,16 @@ export const TECHNIQUES = [
         name: '4-7-8 Relax',
         tagline: 'Sedative',
         description: 'Extended breath hold and exhale acts as a tranquilizer for the nervous system.',
+        tip: 'Keep the tongue behind upper front teeth. Make a whoosh sound on exhale.',
         strength: 'Best sleep onset tool, sedative effect',
         pas: 8.9,
+        audioProfile: { baseFreq: 65.41, binauralBeat: 2 }, // Delta
+        categories: ['sleep', 'stress'],
+        optimalDuration: '4-8 cycles (approx 2 mins)',
+        science: {
+            mechanism: 'The long hold allows for increased oxygen absorption, while the extended exhale signals a profound safety state to the vagus nerve.',
+            benefits: ['Sedation', 'Sleep Onset', 'Anxiety Redux']
+        },
         ranks: {
             pas: 3,
             stress: 7,
@@ -93,8 +124,16 @@ export const TECHNIQUES = [
         name: 'Diaphragmatic',
         tagline: 'Belly Breathing',
         description: 'Deep engagement of the lower lung fields to stimulate the vagus nerve.',
+        tip: 'Place a hand on your belly. Feel it rise on inhale, fall on exhale. Chest stays still.',
         strength: 'Deep vagal stimulation, deep sleep enhancer',
         pas: 7.6,
+        audioProfile: { baseFreq: 65.41, binauralBeat: 2 }, // Delta
+        categories: ['hrv', 'sleep', 'stress', 'balance'],
+        optimalDuration: '5-10 minutes',
+        science: {
+            mechanism: 'Mechanically stimulates the vagus nerve endings in the lower lungs and diaphragm, promoting a "Rest and Digest" state.',
+            benefits: ['Lower Cortisol', 'Core Stability', 'Digestion']
+        },
         ranks: {
             pas: 6,
             stress: 8,
@@ -122,8 +161,20 @@ export const TECHNIQUES = [
         name: 'Box Breathing',
         tagline: 'Navy SEAL Focus',
         description: 'Equal duration for all phases. Increases CO2 tolerance and mental clarity.',
+        tip: 'Visualize drawing a side of a box with each step. Keep the breath smooth.',
         strength: 'Cognitive control, interview calmness',
         pas: 8.2,
+        audioProfile: { baseFreq: 110, binauralBeat: 10 }, // Alpha
+        categories: ['hrv', 'focus', 'interview', 'stress'],
+        optimalDuration: '5-20 minutes',
+        science: {
+            mechanism: 'The breath holds build CO2 tolerance (hypercapnic training), which calms the amygdala while keeping the cortex alert and focused.',
+            benefits: ['Laser Focus', 'Panic Control', 'Alertness']
+        },
+        transition: {
+            nextTechId: 'coherent',
+            condition: 'After acute stress passes'
+        },
         ranks: {
             pas: 4,
             stress: 3,
@@ -149,179 +200,20 @@ export const TECHNIQUES = [
         ],
     },
     {
-        id: 'resonance_6',
-        name: 'Resonance 6',
-        tagline: 'HRV Builder',
-        description: '4s In, 6s Ex. Maximizes HRV via baroreflex stimulation (6 bpm).',
-        strength: 'Balances nervous system, optimizes HRV',
-        pas: 8.5,
-        ranks: {
-            pas: 2,
-            stress: 2,
-            speed: 3,
-            hrv: 1,
-            sleep: 3,
-            deepSleep: 4,
-            discreet: 3,
-        },
-        meta: {
-            hrv: '⚡⚡⚡ Max',
-            stress: 'Balance',
-            speed: '⏱️ 60s+',
-        },
-        entrainmentFreq: 5, // Theta
-        color: 'from-emerald-400 via-teal-500 to-cyan-600',
-        steps: [
-            { action: 'Inhale', duration: 4000, scale: 1.4, text: 'Inhale (4s)', vibration: [40] },
-            { action: 'Exhale', duration: 6000, scale: 1.0, text: 'Exhale (6s)', vibration: [40] },
-        ],
-    },
-    {
-        id: 'nadi',
-        name: 'Nadi Balance',
-        tagline: 'Alt. Nostril',
-        description: 'Alternate nostril breathing to balance brain hemispheres.',
-        strength: 'Balances brain hemispheres, focuses mind',
-        pas: 8.0,
-        ranks: {
-            pas: 3,
-            stress: 3,
-            speed: 4,
-            hrv: 4,
-            sleep: 4,
-            deepSleep: 5,
-            discreet: 8,
-        },
-        meta: {
-            stress: 'Balance',
-            hrv: 'Focus',
-            discreet: 'Active',
-        },
-        entrainmentFreq: 10, // Alpha
-        color: 'from-amber-400 via-orange-500 to-red-500',
-        steps: [
-            { action: 'Inhale', duration: 4000, scale: 1.3, text: 'Inhale Left', vibration: [30], pan: -1 },
-            { action: 'Exhale', duration: 4000, scale: 1.0, text: 'Exhale Right', vibration: [30], pan: 1 },
-            { action: 'Inhale', duration: 4000, scale: 1.3, text: 'Inhale Right', vibration: [30], pan: 1 },
-            { action: 'Exhale', duration: 4000, scale: 1.0, text: 'Exhale Left', vibration: [30], pan: -1 },
-        ],
-    },
-    {
-        id: 'bhramari',
-        name: 'Bhramari',
-        tagline: 'Humming Bee',
-        description: 'Vibrational stimulation of the vagus nerve in the larynx via humming.',
-        strength: 'Emotional calming, vagus vibration, improves REM',
-        pas: 7.8,
-        ranks: {
-            pas: 5,
-            stress: 4,
-            speed: 4,
-            hrv: 3,
-            sleep: 3,
-            deepSleep: 4,
-            discreet: 7,
-        },
-        meta: {
-            sleep: 'Calms Amygdala',
-            stress: '⚡⚡ Vibration',
-            discreet: 'Not Discreet',
-        },
-        color: 'from-yellow-400 via-amber-500 to-orange-500',
-        steps: [
-            { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Deep Inhale', vibration: [40] },
-            { action: 'Exhale', duration: 10000, scale: 1.0, text: 'Hummmmm...', vibration: [120] },
-        ],
-    },
-    {
-        id: 'voo',
-        name: 'Voo Chanting',
-        tagline: 'Vagal Tone',
-        description: 'Low pitched "Voo" sound vibrates the diaphragm and chest.',
-        strength: 'Grounding, emotional regulation',
-        pas: 7.8,
-        ranks: {
-            pas: 5,
-            stress: 5,
-            speed: 5,
-            hrv: 4,
-            sleep: 4,
-            deepSleep: 5,
-            discreet: 8,
-        },
-        meta: {
-            discreet: 'Not Discreet',
-            hrv: '⭐⭐⭐⭐',
-        },
-        color: 'from-fuchsia-500 via-pink-600 to-purple-600',
-        steps: [
-            { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Deep Inhale', vibration: [40] },
-            { action: 'Exhale', duration: 10000, scale: 1.0, text: 'Vooooooo...', vibration: [120] },
-        ],
-    },
-    {
-        id: 'long_exhale',
-        name: 'Long Exhale',
-        tagline: '3:6 Ratio',
-        description: 'Simple ratio breathing to lower heart rate quickly.',
-        strength: 'Lowers HR, improves calmness',
-        pas: 7.4,
-        ranks: {
-            pas: 7,
-            stress: 2,
-            speed: 2,
-            hrv: 6,
-            sleep: 7,
-            deepSleep: 6,
-            discreet: 3,
-        },
-        meta: {
-            stress: '⚡⚡ Fast',
-            speed: '⏱️ 20–40 sec',
-            discreet: 'Invisible',
-            sleep: 'Focus', // Corrected from App.tsx observation if needed, using value seen in App.tsx
-        },
-        color: 'from-cyan-400 via-sky-500 to-blue-500',
-        steps: [
-            { action: 'Inhale', duration: 3000, scale: 1.5, text: 'Inhale (3s)', vibration: [40] },
-            { action: 'Exhale', duration: 6000, scale: 1.0, text: 'Exhale (6s)', vibration: [40] },
-        ],
-    },
-    {
-        id: 'deep_calm',
-        name: 'Deep Calm',
-        tagline: '1:2 Ratio',
-        description: 'Extended exhalation to maximize vagal tone and deep relaxation.',
-        strength: 'Max relaxation, stress relief',
-        pas: 8.8,
-        ranks: {
-            pas: 2,
-            stress: 2,
-            speed: 5,
-            hrv: 2,
-            sleep: 3,
-            deepSleep: 4,
-            discreet: 4,
-        },
-        meta: {
-            stress: '⭐⭐⭐⭐⭐ Relief',
-            hrv: 'Max Vagal Tone',
-            sleep: 'Relaxation',
-        },
-        entrainmentFreq: 4, // Theta
-        color: 'from-teal-400 via-teal-500 to-teal-600',
-        steps: [
-            { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Inhale (4s)', vibration: [40] },
-            { action: 'Exhale', duration: 8000, scale: 1.0, text: 'Exhale (8s)', vibration: [40] },
-        ],
-    },
-    {
         id: 'tranquility',
         name: 'Tranquility',
         tagline: 'Gentle Sleep',
         description: 'Gentle 3-4-6 rhythm to aid sleep onset without air hunger.',
+        tip: 'Allow the longer exhale to soften your muscles. Let gravity do the work.',
         strength: 'Sleep onset, anxiety reduction',
         pas: 8.6,
+        audioProfile: { baseFreq: 65.41, binauralBeat: 2 }, // Delta
+        categories: ['sleep', 'stress'],
+        optimalDuration: '5-10 minutes',
+        science: {
+            mechanism: 'A gentler variation of 4-7-8, reducing air hunger while still prioritizing a longer exhalation to activate parasympathetic pathways.',
+            benefits: ['Sleep Onset', 'Mild Sedation', 'Comfort']
+        },
         ranks: {
             pas: 3,
             stress: 4,
@@ -344,4 +236,116 @@ export const TECHNIQUES = [
             { action: 'Exhale', duration: 6000, scale: 1.0, text: 'Exhale (6s)', vibration: [40] },
         ],
     },
+    {
+        id: 'bhramari',
+        name: 'Bhramari',
+        tagline: 'Humming Bee',
+        description: 'Vibrational stimulation of the vagus nerve in the larynx via humming.',
+        tip: 'Close your eyes. Gently block your ears with thumbs. Hum like a bee on exhale.',
+        strength: 'Emotional calming, vagus vibration, improves REM',
+        pas: 7.8,
+        audioProfile: { baseFreq: 110, binauralBeat: 10 }, // Alpha
+        categories: ['stress', 'sleep', 'balance'],
+        optimalDuration: '5-10 mins',
+        science: {
+            mechanism: 'The humming sound creates vibration in the larynx and skull, physically stimulating the vagus nerve and producing nitric oxide in sinuses.',
+            benefits: ['Nitric Oxide', 'Vagus Stim', 'Silence Mind']
+        },
+        ranks: {
+            pas: 5,
+            stress: 4,
+            speed: 4,
+            hrv: 3,
+            sleep: 3,
+            deepSleep: 4,
+            discreet: 7,
+        },
+        meta: {
+            sleep: 'Calms Amygdala',
+            stress: '⚡⚡ Vibration',
+            discreet: 'Not Discreet',
+        },
+        color: 'from-yellow-400 via-amber-500 to-orange-500',
+        steps: [
+            { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Deep Inhale', vibration: [40] },
+            { action: 'Exhale', duration: 10000, scale: 1.0, text: 'Hummmmm...', vibration: [120] },
+        ],
+        entrainmentFreq: 0
+    },
+    {
+        id: 'voo',
+        name: 'Voo Chanting',
+        tagline: 'Vagal Tone',
+        description: 'Low pitched "Voo" sound vibrates the diaphragm and chest.',
+        tip: 'Direct the "Voo" sound down to your belly. Feel the vibration in your gut.',
+        strength: 'Grounding, emotional regulation',
+        pas: 7.8,
+        audioProfile: { baseFreq: 110, binauralBeat: 10 }, // Alpha
+        categories: ['panic', 'stress'],
+        optimalDuration: '1-3 mins',
+        science: {
+            mechanism: 'Popularized by Dr. Peter Levine for trauma release. The low frequency sound vibrates the viscera, signaling safety to the deep brain.',
+            benefits: ['Trauma Release', 'Grounding', 'Safety']
+        },
+        ranks: {
+            pas: 5,
+            stress: 5,
+            speed: 5,
+            hrv: 4,
+            sleep: 4,
+            deepSleep: 5,
+            discreet: 8,
+        },
+        meta: {
+            discreet: 'Not Discreet',
+            hrv: '⭐⭐⭐⭐',
+            sleep: 'Grounding',
+            stress: 'Trauma',
+            speed: 'Fast',
+            deepSleep: 'Grounding'
+        },
+        entrainmentFreq: 4, // Theta/Grounding
+        color: 'from-fuchsia-500 via-pink-600 to-purple-600',
+        steps: [
+            { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Deep Inhale', vibration: [40] },
+            { action: 'Exhale', duration: 10000, scale: 1.0, text: 'Vooooooo...', vibration: [120] },
+        ],
+    },
+    {
+        id: 'heart_flow',
+        name: 'Heart Flow',
+        tagline: 'Vagal Tone 4:6',
+        description: 'Inhale for 4s, Exhale for 6s. Optimizes Heart Rate Variability by emphasizing the exhale.',
+        tip: 'Make the exhale slightly longer than the inhale to trigger the "rest and digest" signal.',
+        strength: 'Vagal tone improvement, emotional balance',
+        pas: 9.2,
+        audioProfile: { baseFreq: 110, binauralBeat: 10 }, // Alpha
+        categories: ['hrv', 'balance', 'stress'],
+        optimalDuration: '10-20 mins',
+        science: {
+            mechanism: 'Extending the exhalation stimulates the vagus nerve (parasympathetic), increasing Heart Rate Variability and calming the nervous system.',
+            benefits: ['Increase HRV', 'Calm Nerves', 'Balance']
+        },
+        ranks: {
+            pas: 2,
+            stress: 5,
+            speed: 6,
+            hrv: 1, // Top tier
+            sleep: 4,
+            deepSleep: 4,
+            discreet: 3,
+        },
+        meta: {
+            hrv: '⭐⭐⭐⭐⭐ Elite',
+            stress: 'Balance',
+            discreet: 'Quiet',
+            speed: 'Medium'
+        },
+        entrainmentFreq: 0.1, // Resonance approx
+        color: 'from-pink-400 via-rose-400 to-red-400',
+        steps: [
+            { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Inhale (4s)', vibration: [40] },
+            { action: 'Exhale', duration: 6000, scale: 1.0, text: 'Exhale (6s)', vibration: [40] },
+        ],
+    }
 ];
