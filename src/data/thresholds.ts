@@ -1,7 +1,7 @@
 export const EVENING_MANDATORY_THRESHOLDS = {
-    sigh: 40,
-    long_exhale: 20,
-    coherent: 480,
-    diaphragm: 120,
-    sleep_478: 15,
+    sigh: 5,
+    long_exhale: 5,
+    coherent: 10,
+    diaphragm: 5,
+    sleep_478: 5,
 };

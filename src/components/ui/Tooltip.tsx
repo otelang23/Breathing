@@ -13,16 +13,17 @@ export const Tooltip = ({ children, content, side = 'right' }: TooltipProps) => 
 
     // Update coordinates when visible
     useEffect(() => {
-        if (isVisible && triggerRef.current) {
+        if (!isVisible || !triggerRef.current) return;
+
+        const updatePosition = () => {
+            if (!triggerRef.current) return;
             const rect = triggerRef.current.getBoundingClientRect();
             let top = 0;
             let left = 0;
 
-            // Simple calculation based on side
-            // Note: Fixed positioning is relative to viewport
             if (side === 'right') {
                 top = rect.top + rect.height / 2;
-                left = rect.right + 12; // 12px gap
+                left = rect.right + 12;
             } else if (side === 'bottom') {
                 top = rect.bottom + 8;
                 left = rect.left + rect.width / 2;
@@ -35,7 +36,19 @@ export const Tooltip = ({ children, content, side = 'right' }: TooltipProps) => 
             }
 
             setCoords({ top, left });
-        }
+        };
+
+        // Initial update
+        updatePosition();
+
+        // Listen for scroll on ANY parent (capture phase)
+        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', updatePosition);
+
+        return () => {
+            window.removeEventListener('scroll', updatePosition, true);
+            window.removeEventListener('resize', updatePosition);
+        };
     }, [isVisible, side]);
 
     return (

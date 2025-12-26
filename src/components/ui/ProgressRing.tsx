@@ -8,8 +8,9 @@ export const ProgressRing = ({ radius, stroke, progress }: { radius: number; str
     return (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <svg
-                height={radius * 2}
-                width={radius * 2}
+                viewBox={`0 0 ${radius * 2} ${radius * 2}`}
+                width="100%"
+                height="100%"
                 className="transform -rotate-90 transition-all duration-100 ease-linear"
             >
                 <circle

@@ -88,10 +88,7 @@ const AppContent = () => {
   const rawRemaining = (currentStep.duration * (1 - stepProgress / 100)) / 1000;
   // Show decimals if duration is fractional (e.g. 5.5s) or generally for higher precision feel
   // "neither 5 nor 6" implies precision is desired.
-  const isFractional = currentStep.duration % 1000 !== 0;
-  const displaySeconds = isFractional
-    ? Math.max(0, rawRemaining).toFixed(1)
-    : Math.max(1, Math.ceil(rawRemaining)).toString();
+  const displaySeconds = Math.max(0, rawRemaining).toFixed(1);
 
   return (
     <div className={`h-screen w-screen bg-background text-text-main font-sans selection:bg-primary/30 relative flex flex-col md:flex-row overflow-hidden theme-${theme}`}>

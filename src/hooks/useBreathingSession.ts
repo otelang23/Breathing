@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AudioEngine } from '../services/AudioEngine';
 import { PRESETS } from '../data/presets';
 import { TECHNIQUES } from '../data/techniques';
@@ -105,13 +105,22 @@ export const useBreathingSession = ({
         };
     }, [isActive, soundMode, audioVariant]);
 
+    // Use refs for callbacks to keep interval stable
+    const onTickRef = useRef(onTick);
+    const onSleepTriggerRef = useRef(onSleepTrigger);
+
+    useEffect(() => {
+        onTickRef.current = onTick;
+        onSleepTriggerRef.current = onSleepTrigger;
+    }, [onTick, onSleepTrigger]);
+
     // Global Timer & Logic
     useEffect(() => {
         if (!isActive) return;
 
         const interval = setInterval(() => {
             setTotalSeconds((prev) => prev + 1);
-            if (onTick) onTick(selectedTech.id);
+            if (onTickRef.current) onTickRef.current(selectedTech.id);
 
             // Preset Logic
             if (activePresetId) {
@@ -144,13 +153,23 @@ export const useBreathingSession = ({
             }
 
             // We rely on parent to handle Sleep Mode "soundMode" change via onSleepTrigger
-            if (onSleepTrigger && totalSeconds + 1 >= 420) {
-                onSleepTrigger();
+            if (onSleepTriggerRef.current) {
+                // Logic handled in separate effect below for threshold check, 
+                // but if we wanted to do it here we could.
+                // Let's stick to the separate effect for the trigger logic as it depends on totalSeconds.
             }
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [isActive, activePresetId, presetSegmentIndex, presetSegmentStartSec, totalSeconds, selectedTech.id, onTick, onSleepTrigger]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isActive, activePresetId, presetSegmentIndex, presetSegmentStartSec, selectedTech.id]); // Removed callbacks from deps 
+
+    // Separate effect for Sleep Mode trigger to avoid interval churn
+    useEffect(() => {
+        if (isActive && onSleepTrigger && totalSeconds >= 420) { // 7 mins
+            onSleepTrigger();
+        }
+    }, [totalSeconds, isActive, onSleepTrigger]);
 
     // Helper Actions
     const toggleSession = () => {
