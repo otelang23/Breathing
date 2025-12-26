@@ -22,12 +22,15 @@ interface SettingsContextType {
     setFocusMode: (enabled: boolean) => void;
     audioVariant: 'standard' | 'binaural' | 'noise';
     setAudioVariant: (variant: 'standard' | 'binaural' | 'noise') => void;
+    voiceEnabled: boolean;
+    setVoiceEnabled: (enabled: boolean) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export const SettingsProvider = ({ children }: { children: React.ReactNode }) => {
     const [theme, setTheme] = useState<Theme>('midnight');
+    const [voiceEnabled, setVoiceEnabled] = useState(false);
     const [soundMode, setSoundMode] = useState<SoundMode>('minimal');
     const [volume, setVolume] = useState(0.5);
     const [hapticEnabled, setHapticEnabled] = useState(true);
@@ -72,7 +75,9 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
         setFocusMode,
         audioVariant,
         setAudioVariant,
-    }), [theme, soundMode, volume, hapticEnabled, officeMode, sleepMode, focusMode, audioVariant]);
+        voiceEnabled,
+        setVoiceEnabled,
+    }), [theme, soundMode, volume, hapticEnabled, officeMode, sleepMode, focusMode, audioVariant, voiceEnabled]);
 
     return (
         <SettingsContext.Provider value={value}>

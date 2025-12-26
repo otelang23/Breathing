@@ -1,7 +1,27 @@
 export const AudioEngine = {
     ctx: null as AudioContext | null,
+    masterGain: null as GainNode | null,
+    droneOsc: [] as OscillatorNode[],
+    droneGain: null as GainNode | null,
     droneNodes: null as { osc?: OscillatorNode; gain?: GainNode; source?: AudioBufferSourceNode; panL?: StereoPannerNode; panR?: StereoPannerNode } | null,
     masterVolume: 0.5,
+
+    // Voice Synthesis
+    speakPhase: (text: string) => {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Stop overlap
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9; // Slightly slower for calm
+            utterance.pitch = 1.0;
+            utterance.volume = 0.4; // Subtle
+            // Try to find a nice voice
+            const voices = window.speechSynthesis.getVoices();
+            const preferred = voices.find(v => v.name.includes('Google US English') || v.name.includes('Samantha'));
+            if (preferred) utterance.voice = preferred;
+
+            window.speechSynthesis.speak(utterance);
+        }
+    },
 
     init() {
         if (typeof window === 'undefined') return;
