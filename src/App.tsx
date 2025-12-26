@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Wind, Volume2, Smartphone, Shield, Moon, ListChecks, Eye, Trash2, RotateCcw, Pause, Play, Square, EyeOff, Headphones, CloudRain, Activity } from 'lucide-react';
 import { Tooltip } from './components/ui/Tooltip';
 
@@ -19,6 +19,12 @@ import { TechniqueDetail } from './components/features/TechniqueDetail';
 import { InfoModal } from './components/modals/InfoModal';
 import { ProtocolModal } from './components/modals/ProtocolModal';
 
+// Mobile Components
+import { MobileNav } from './components/layout/MobileNav';
+import { BreatheView } from './components/views/BreatheView';
+import { DiscoverView } from './components/views/DiscoverView';
+import { JourneyView } from './components/views/JourneyView';
+
 const AppContent = () => {
   const {
     soundMode, setSoundMode,
@@ -32,6 +38,16 @@ const AppContent = () => {
   } = useSettings();
 
   const { todayLog, logSeconds, resetData, compliance } = useDailyLog();
+
+  // Mobile Navigation State
+  const [activeTab, setActiveTab] = useState<'breathe' | 'discover' | 'journey'>('breathe');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const [filter, setFilter] = useState('pas');
   const [showInfo, setShowInfo] = useState(false);
@@ -84,15 +100,63 @@ const AppContent = () => {
   const selectedFilterLabel = FILTERS.find((f) => f.id === filter)?.label || 'PAS Score';
   const todayKey = new Date().toISOString().slice(0, 10);
 
-  // Calculate remaining time for the current step
   const rawRemaining = (currentStep.duration * (1 - stepProgress / 100)) / 1000;
-  // Show decimals if duration is fractional (e.g. 5.5s) or generally for higher precision feel
-  // "neither 5 nor 6" implies precision is desired.
   const displaySeconds = Math.max(0, rawRemaining).toFixed(1);
 
+  // --- MOBILE RENDER ---
+  if (isMobile) {
+    return (
+      <div className={`h-[100dvh] w-screen bg-background text-text-main font-sans overflow-hidden theme-${theme} relative`}>
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none" />
+        <div className={`absolute top-0 left-0 right-0 h-[60vh] bg-gradient-to-b ${selectedTech.color} to-transparent opacity-10 blur-3xl transition-all duration-700 pointer-events-none`} />
+
+        <main className="h-full w-full flex flex-col relative z-10 transition-all duration-300">
+          {activeTab === 'breathe' && (
+            <BreatheView
+              isActive={isActive}
+              currentStep={currentStep}
+              selectedTech={selectedTech}
+              stepProgress={stepProgress}
+              displaySeconds={displaySeconds}
+              currentStepIndex={currentStepIndex}
+              sessionStats={{ totalSeconds, cycleCount, formatTime }}
+              controls={{ toggle: toggleSession, reset: resetSession, stop: stopSession }}
+            />
+          )}
+
+          {activeTab === 'discover' && (
+            <div className="h-full overflow-hidden">
+              <DiscoverView
+                filter={filter}
+                setFilter={setFilter}
+                techniques={sortedTechniques}
+                dailyLog={todayLog}
+                onSelectTech={(t: any) => { changeTechnique(t); setActiveTab('breathe'); }}
+                activePresetId={activePresetId}
+                onRunPreset={(pid: any) => { startPreset(pid); setActiveTab('breathe'); }}
+              />
+            </div>
+          )}
+
+          {activeTab === 'journey' && (
+            <div className="h-full overflow-hidden">
+              <JourneyView
+                compliance={compliance}
+                dailyLog={todayLog}
+                onChangeTechnique={(t: any) => { changeTechnique(t); setActiveTab('breathe'); }}
+              />
+            </div>
+          )}
+        </main>
+
+        <MobileNav activeTab={activeTab} onChange={setActiveTab} />
+      </div>
+    );
+  }
+
+  // --- DESKTOP RENDER (Original Layout) ---
   return (
     <div className={`h-screen w-screen bg-background text-text-main font-sans selection:bg-primary/30 relative flex flex-col md:flex-row overflow-hidden theme-${theme}`}>
-      {/* Background */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none" />
       <div
         className={`absolute top-0 left-0 right-0 h-[55vh] bg-gradient-to-b ${selectedTech.color} to-transparent opacity-10 blur-3xl transition-all duration-700 pointer-events-none`}
@@ -101,18 +165,14 @@ const AppContent = () => {
       {/* HEADER / SIDEBAR */}
       <aside className={`
         fixed z-50 transition-all duration-500 ease-spring
-        /* Desktop: Vertical Sidebar on Left */
         md:top-0 md:left-0 md:h-full md:w-24 md:flex-col md:border-r
-        /* Mobile: Top Bar */
         top-0 left-0 w-full h-16 flex-row border-b overflow-x-auto no-scrollbar md:overflow-y-auto
-        
         flex items-center justify-start md:justify-between px-4 gap-4 md:py-8
         ${theme === 'midnight' ? 'bg-slate-950/60 border-slate-800/50' :
           theme === 'ocean' ? 'bg-blue-950/60 border-blue-900/50' :
             theme === 'forest' ? 'bg-green-950/60 border-green-900/50' : 'bg-red-950/60 border-red-900/50'}
         backdrop-blur-xl shadow-2xl
       `}>
-        {/* Logo / Home */}
         <div className="flex shrink-0">
           <Tooltip content="About & Guide" side="right">
             <button
@@ -130,10 +190,7 @@ const AppContent = () => {
           </Tooltip>
         </div>
 
-        {/* Center Controls (Theming & Audio) */}
         <div className="flex shrink-0 md:flex-col items-center gap-3 md:gap-6">
-
-          {/* Sound Mode Toggle */}
           <div className="flex md:flex-col items-center gap-1 bg-black/20 rounded-full p-1 border border-white/5 shadow-inner">
             {['silent', 'minimal', 'rich'].map((mode) => (
               <Tooltip key={mode} content={`Sound Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`} side="right">
@@ -154,7 +211,6 @@ const AppContent = () => {
 
           <div className="w-px h-8 md:w-8 md:h-px bg-white/10" />
 
-          {/* Theme Switcher */}
           <Tooltip content={`Current Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`} side="right">
             <button
               onClick={() => {
@@ -171,7 +227,6 @@ const AppContent = () => {
             </button>
           </Tooltip>
 
-          {/* Audio Variant */}
           <Tooltip content={`Audio: ${audioVariant.charAt(0).toUpperCase() + audioVariant.slice(1)}`} side="right">
             <button
               onClick={() => {
@@ -187,14 +242,9 @@ const AppContent = () => {
           </Tooltip>
         </div>
 
-        {/* Bottom/Right Controls (Volume & Modes) */}
         <div className="flex shrink-0 md:flex-col items-center gap-3 md:gap-6">
-
-          {/* Vertical Volume Slider (Desktop) / Horizontal (Mobile) */}
           <div className="group flex items-center justify-center p-2 rounded-2xl hover:bg-white/5 transition-colors relative" title="Volume Control">
             <Volume2 className={`w-5 h-5 transition-colors ${volume === 0 ? 'text-white/30' : 'text-white/70 group-hover:text-white'}`} />
-
-            {/* Desktop Vertical Pop-out Slider */}
             <div className="absolute hidden md:flex md:items-center md:justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 bg-slate-900/90 backdrop-blur-md rounded-full border border-white/10 shadow-xl"
               style={{
                 height: '140px',
@@ -215,20 +265,6 @@ const AppContent = () => {
                 aria-label="Volume"
               />
             </div>
-
-            {/* Mobile Only Slider */}
-            <div className="md:hidden flex ml-2">
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={soundMode === 'silent' ? 0 : volume}
-                onChange={(e) => setVolume(parseFloat(e.target.value))}
-                className="w-20 h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-white"
-                aria-label="Volume"
-              />
-            </div>
           </div>
 
           <Tooltip content="Haptic Feedback" side="right">
@@ -240,7 +276,6 @@ const AppContent = () => {
             </button>
           </Tooltip>
 
-          {/* More Menu Items */}
           <div className="flex md:flex-col gap-3 md:gap-4">
             <Tooltip content="Office Mode (No Flashing)" side="right">
               <button
@@ -292,12 +327,9 @@ const AppContent = () => {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <main className="flex-1 flex flex-col md:ml-24 md:h-screen overflow-hidden relative">
-        {/* Mobile Spacer to push content down below fixed header */}
         <div className="h-20 md:hidden" />
 
-        {/* FILTER BAR - Floating Glass Design */}
         <div className={`w-full z-20 px-4 mb-4 flex justify-center transition-all duration-500 ease-out ${focusMode ? 'opacity-0 -translate-y-4 pointer-events-none' : 'opacity-1000 translate-y-0'}`}>
           <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-1.5 flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full shadow-2xl">
             {FILTERS.map((f) => (
@@ -312,7 +344,6 @@ const AppContent = () => {
           </div>
         </div>
 
-        {/* MAIN SCROLL AREA */}
         <div className="relative z-10 flex-1 flex flex-col items-center p-4 min-h-0 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar">
           <section className="flex-1 flex flex-col items-center justify-start w-full gap-6 md:gap-8 pb-20">
             <div className="w-full grid grid-cols-1 md:grid-cols-3 items-center gap-6 relative">
@@ -328,7 +359,6 @@ const AppContent = () => {
                   progress={stepProgress}
                 />
 
-                {/* Phase labels row */}
                 <div className="mt-4 flex gap-2 text-[10px] uppercase tracking-[0.14em]">
                   {['Inhale', 'Hold', 'Exhale', 'Hold2'].map((phase, idx) => {
                     const match =
