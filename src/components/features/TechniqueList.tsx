@@ -10,6 +10,8 @@ const getTechniqueIcon = (id: string) => {
         case 'sleep_478': return <Moon className="w-5 h-5" />;
         case 'bhramari': return <Zap className="w-5 h-5" />;
         case 'voo': return <Mic className="w-5 h-5" />;
+        case 'deep_calm': return <Heart className="w-5 h-5" />;
+        case 'tranquility': return <Moon className="w-5 h-5" />;
         default: return <Activity className="w-5 h-5" />;
     }
 };

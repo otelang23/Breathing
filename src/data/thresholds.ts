@@ -4,4 +4,6 @@ export const EVENING_MANDATORY_THRESHOLDS = {
     coherent: 10,
     diaphragm: 5,
     sleep_478: 5,
+    deep_calm: 5,
+    tranquility: 5,
 };

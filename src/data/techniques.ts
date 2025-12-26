@@ -287,4 +287,61 @@ export const TECHNIQUES = [
             { action: 'Exhale', duration: 6000, scale: 1.0, text: 'Exhale (6s)', vibration: [40] },
         ],
     },
+    {
+        id: 'deep_calm',
+        name: 'Deep Calm',
+        tagline: '1:2 Ratio',
+        description: 'Extended exhalation to maximize vagal tone and deep relaxation.',
+        strength: 'Max relaxation, stress relief',
+        pas: 8.8,
+        ranks: {
+            pas: 2,
+            stress: 2,
+            speed: 5,
+            hrv: 2,
+            sleep: 3,
+            deepSleep: 4,
+            discreet: 4,
+        },
+        meta: {
+            stress: '⭐⭐⭐⭐⭐ Relief',
+            hrv: 'Max Vagal Tone',
+            sleep: 'Relaxation',
+        },
+        entrainmentFreq: 4, // Theta
+        color: 'from-teal-400 via-teal-500 to-teal-600',
+        steps: [
+            { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Inhale (4s)', vibration: [40] },
+            { action: 'Exhale', duration: 8000, scale: 1.0, text: 'Exhale (8s)', vibration: [40] },
+        ],
+    },
+    {
+        id: 'tranquility',
+        name: 'Tranquility',
+        tagline: 'Gentle Sleep',
+        description: 'Gentle 3-4-6 rhythm to aid sleep onset without air hunger.',
+        strength: 'Sleep onset, anxiety reduction',
+        pas: 8.6,
+        ranks: {
+            pas: 3,
+            stress: 4,
+            speed: 7,
+            hrv: 5,
+            sleep: 2,
+            deepSleep: 2,
+            discreet: 5,
+        },
+        meta: {
+            sleep: '⭐⭐⭐⭐ Onset',
+            deepSleep: 'Gentle',
+            stress: 'Anxiety',
+        },
+        entrainmentFreq: 3, // Delta
+        color: 'from-indigo-300 via-indigo-400 to-violet-400',
+        steps: [
+            { action: 'Inhale', duration: 3000, scale: 1.4, text: 'Inhale (3s)', vibration: [30] },
+            { action: 'Hold', duration: 4000, scale: 1.4, text: 'Hold (4s)', vibration: [20] },
+            { action: 'Exhale', duration: 6000, scale: 1.0, text: 'Exhale (6s)', vibration: [40] },
+        ],
+    },
 ];
