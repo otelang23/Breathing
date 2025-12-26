@@ -5,6 +5,8 @@ export const BreathingOrb = ({
     color,
     isActive,
     action,
+    duration,
+    progress,
     segments,
     currentStepIndex,
 }: {
