@@ -100,10 +100,10 @@ export const BreatheView = ({
     };
 
     return (
-        <div className="relative w-full h-full flex flex-col items-center justify-center p-6">
+        <div className="relative w-full h-full flex flex-col p-6">
 
             {/* Top Bar: Floating Tools */}
-            <div className="absolute top-4 w-full flex justify-between px-4 z-20">
+            <div className="absolute top-4 left-0 w-full flex justify-between px-6 z-20">
                 <div className="flex gap-4">
                     {/* Biofeedback Toggle */}
                     <motion.button
@@ -145,9 +145,9 @@ export const BreatheView = ({
             </div>
 
             {/* Main Center Stage */}
-            <div className="flex-1 flex flex-col items-center justify-center w-full z-10">
+            <div className="flex-1 flex flex-col items-center justify-center w-full z-10 min-h-0">
                 {/* 1. The Orb */}
-                <div className="relative mb-8">
+                <div className="relative mb-8 transform scale-90 md:scale-100 transition-transform">
                     <Orb2
                         isActive={isActive}
                         phase={currentStep.action}
@@ -212,8 +212,8 @@ export const BreatheView = ({
                 </div>
             </div>
 
-            {/* Bottom Controls: Floating Glass Dock */}
-            <div className="absolute bottom-24 w-full flex justify-center gap-8 z-20">
+            {/* Bottom Controls: Static Flex Block (No Overlap) */}
+            <div className="w-full flex justify-center gap-8 z-20 pb-20 md:pb-8 shrink-0">
                 <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
