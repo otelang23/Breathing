@@ -28,6 +28,8 @@ export interface SettingsContextType {
     setVoiceEnabled: (enabled: boolean) => void;
     dailyGoal: DailyGoal[];
     setDailyGoal: (goals: DailyGoal[]) => void;
+    geminiApiKey?: string;
+    setGeminiApiKey: (key: string) => void;
 }
 
 export interface DailyGoal {

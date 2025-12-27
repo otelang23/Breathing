@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wind, Moon, Heart, Zap, Clock, Filter, type LucideIcon } from 'lucide-react';
+import { Wind, Moon, Heart, Zap, Clock, Filter, User as UserIcon, type LucideIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { RoutineCreatorModal } from '../modals/RoutineCreatorModal';
+import { AICoachModal } from '../modals/AICoachModal';
 import { useSettings } from '../../hooks/useSettings';
+import { useAuth } from '../../hooks/useAuth';
 
 import type { Technique } from '../../types';
 
@@ -31,8 +33,10 @@ export const DiscoverView = ({
     saveRoutine,
 }: DiscoverViewProps) => {
 
+    const { user, signInWithGoogle, signOut } = useAuth();
     const { dailyGoal } = useSettings();
     const [isCreatorOpen, setIsCreatorOpen] = useState(false);
+    const [isAICoachOpen, setIsAICoachOpen] = useState(false);
     const [activeFilter, setActiveFilter] = useState('all');
 
     const sortedTechniques = useMemo<Technique[]>(() => {
@@ -69,9 +73,45 @@ export const DiscoverView = ({
         <div className="w-full h-full overflow-y-auto pb-32 pt-12 px-6">
             <div className="max-w-md mx-auto space-y-10">
 
-                {/* Header */}
-                <h1 className="text-3xl font-bold text-white tracking-tight">Discover</h1>
-                <p className="text-white/40 text-sm">Find your rhythm.</p>
+                {/* Header & Account */}
+                <div className="flex items-end justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white tracking-tight">Discover</h1>
+                        <p className="text-white/40 text-sm">Find your rhythm.</p>
+                    </div>
+
+                    {/* Mobile Account Status */}
+                    <div className="flex flex-col items-end gap-2">
+                        {user ? (
+                            <div className="flex items-center gap-2">
+                                <div className="text-right hidden sm:block">
+                                    <div className="text-xs font-bold text-white">{user.displayName}</div>
+                                </div>
+                                {user.photoURL ? (
+                                    <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-white/20" />
+                                ) : (
+                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                        <UserIcon className="w-4 h-4 text-white/50" />
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <button
+                                onClick={signInWithGoogle}
+                                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                            >
+                                <UserIcon className="w-4 h-4 text-white/50" />
+                            </button>
+                        )}
+
+                        <button
+                            onClick={user ? signOut : signInWithGoogle}
+                            className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20"
+                        >
+                            {user ? 'Log Out' : 'Sign In'}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Filter Tabs - Horizontal Scroll */}
@@ -82,13 +122,13 @@ export const DiscoverView = ({
                 {[
                     { id: 'all', label: 'All' },
                     { id: 'protocol', label: 'Daily Protocol' },
-                    { id: 'custom', label: 'Custom', icon: '✨' },
                     { id: 'manifestation', label: 'LOA', icon: '🌌' }, // Added LOA
                     { id: 'hrv', label: 'HRV', icon: '❤️' },
                     { id: 'sleep', label: 'Sleep', icon: '🌙' },
                     { id: 'stress', label: 'Stress', icon: '🧘' },
                     { id: 'focus', label: 'Focus', icon: '⚡' },
                     { id: 'panic', label: 'Panic', icon: '🚨' },
+                    { id: 'custom', label: 'Custom', icon: '✨' },
                 ].map(f => (
                     <button
                         key={f.id}
@@ -117,6 +157,12 @@ export const DiscoverView = ({
                             + Create New
                         </button>
                     )}
+                    <button
+                        onClick={() => setIsAICoachOpen(true)}
+                        className="text-xs font-bold text-indigo-400 uppercase tracking-widest hover:text-indigo-300 transition-colors ml-4"
+                    >
+                        AI Coach ✨
+                    </button>
                 </div>
 
                 <div className="flex flex-col gap-4">
@@ -185,6 +231,18 @@ export const DiscoverView = ({
                 onClose={() => setIsCreatorOpen(false)}
                 onSave={saveRoutine}
             />
+
+            <AnimatePresence>
+                {isAICoachOpen && (
+                    <AICoachModal
+                        onClose={() => setIsAICoachOpen(false)}
+                        onStartTechnique={(tech) => {
+                            setIsAICoachOpen(false);
+                            onSelectTech(tech);
+                        }}
+                    />
+                )}
+            </AnimatePresence>
 
             {/* Presets Grid */}
             <section>

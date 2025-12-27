@@ -47,6 +47,7 @@ export interface Technique {
     categories?: string[];
     isCustom?: boolean;
     targetDurationSec?: number;
+    benefits?: string[];
 }
 
 export interface PresetSegment {

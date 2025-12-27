@@ -16,6 +16,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     const [focusMode, setFocusMode] = useState(false);
     const [audioVariant, setAudioVariant] = useState<'standard' | 'binaural' | 'noise'>('standard');
     const [dailyGoal, setDailyGoal] = useState<DailyGoal[]>([{ id: 'default', techniqueId: 'any', targetMinutes: 10 }]);
+    const [geminiApiKey, setGeminiApiKey] = useState<string>('');
     const { user } = useAuth(); // Access auth for sync
 
     // 1. Load Settings from Cloud
@@ -34,6 +35,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
                     if (data.officeMode !== undefined) setOfficeMode(data.officeMode);
                     if (data.sleepMode !== undefined) setSleepMode(data.sleepMode);
                     if (data.audioVariant) setAudioVariant(data.audioVariant as 'standard');
+                    if (data.geminiApiKey) setGeminiApiKey(data.geminiApiKey);
                     if (data.dailyGoal) {
                         if (Array.isArray(data.dailyGoal)) {
                             setDailyGoal(data.dailyGoal);
@@ -67,7 +69,8 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
                     focusMode,
                     audioVariant,
                     voiceEnabled,
-                    dailyGoal
+                    dailyGoal,
+                    geminiApiKey // Sync API Key
                 }, { merge: true });
             } catch (error) {
                 console.error("Failed to save settings", error);
@@ -75,7 +78,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
         }, 1000); // 1s debounce
 
         return () => clearTimeout(timeoutId);
-    }, [user, theme, soundMode, volume, hapticEnabled, officeMode, sleepMode, focusMode, audioVariant, voiceEnabled, dailyGoal]);
+    }, [user, theme, soundMode, volume, hapticEnabled, officeMode, sleepMode, focusMode, audioVariant, voiceEnabled, dailyGoal, geminiApiKey]);
 
     // Sync volume with AudioEngine
     useEffect(() => {
@@ -130,8 +133,10 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
         voiceEnabled,
         setVoiceEnabled,
         dailyGoal,
-        setDailyGoal
-    }), [theme, soundMode, volume, hapticEnabled, officeMode, sleepMode, focusMode, audioVariant, voiceEnabled, dailyGoal]);
+        setDailyGoal,
+        geminiApiKey,
+        setGeminiApiKey
+    }), [theme, soundMode, volume, hapticEnabled, officeMode, sleepMode, focusMode, audioVariant, voiceEnabled, dailyGoal, geminiApiKey]);
 
     return (
         <SettingsContext.Provider value={value}>

@@ -113,7 +113,7 @@ export const BreatheView = ({
         <div className="relative w-full h-full flex flex-col p-6">
 
             {/* Top Bar: Floating Tools */}
-            <div className="absolute top-4 left-0 w-full flex justify-between px-6 z-20">
+            <div className="w-full flex justify-between z-20 mb-4">
                 <div className="flex gap-6">
                     {/* Biofeedback Toggle */}
                     <div className="flex flex-col items-center gap-1">

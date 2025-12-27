@@ -4,6 +4,7 @@ import { Wind, Moon, Heart, Zap, Clock, ArrowRight, Filter, User as UserIcon } f
 import { cn } from '../../lib/utils';
 import { TechniqueDetailModal } from '../modals/TechniqueDetailModal';
 import { RoutineCreatorModal } from '../modals/RoutineCreatorModal';
+import { AICoachModal } from '../modals/AICoachModal';
 import { useAuth } from '../../hooks/useAuth';
 import { useSettings } from '../../hooks/useSettings';
 
@@ -22,7 +23,6 @@ const ICONS: Record<string, LucideIcon> = {
 const FILTERS = [
     { id: 'all', label: 'All' },
     { id: 'protocol', label: 'Daily Protocol', icon: '📅' },
-    { id: 'custom', label: 'Custom', icon: '✨' },
     { id: 'manifestation', label: 'LOA', icon: '🌌' },
     { id: 'panic', label: 'Panic', icon: '🚨' },
     { id: 'interview', label: 'Interview', icon: '💼' },
@@ -31,6 +31,7 @@ const FILTERS = [
     { id: 'stress', label: 'Stress', icon: '🧘' },
     { id: 'hrv', label: 'HRV', icon: '❤️' },
     { id: 'balance', label: 'Balance', icon: '⚖️' },
+    { id: 'custom', label: 'Custom', icon: '✨' },
 ];
 
 import type { Technique } from '../../types';
@@ -55,6 +56,7 @@ export const DesktopDiscoverView = ({
     const [activeFilter, setActiveFilter] = useState('all');
     const [viewDetailTech, setViewDetailTech] = useState<Technique | null>(null);
     const [isCreatorOpen, setIsCreatorOpen] = useState(false);
+    const [isAICoachOpen, setIsAICoachOpen] = useState(false);
 
     const sortedTechniques = useMemo<Technique[]>(() => {
         // Special Case: Daily Protocol
@@ -151,6 +153,13 @@ export const DesktopDiscoverView = ({
                             );
                         })}
                     </div>
+
+                    <button
+                        onClick={() => setIsAICoachOpen(true)}
+                        className="px-6 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/50 text-indigo-400 text-xs font-bold uppercase tracking-wider hover:bg-indigo-500 hover:text-white transition-all ml-4"
+                    >
+                        Ask AI Coach ✨
+                    </button>
 
                     {activeFilter === 'custom' && (
                         <button
@@ -252,6 +261,18 @@ export const DesktopDiscoverView = ({
                 onClose={() => setIsCreatorOpen(false)}
                 onSave={saveRoutine}
             />
+
+            <AnimatePresence>
+                {isAICoachOpen && (
+                    <AICoachModal
+                        onClose={() => setIsAICoachOpen(false)}
+                        onStartTechnique={(tech) => {
+                            setIsAICoachOpen(false);
+                            onSelectTech(tech);
+                        }}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 };

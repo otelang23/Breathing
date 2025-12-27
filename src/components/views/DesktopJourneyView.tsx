@@ -3,6 +3,7 @@ import { CheckCircle2, TrendingUp, Calendar, Settings, User as UserIcon } from '
 import { useAuth } from '../../hooks/useAuth';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { WeeklyChart } from '../features/WeeklyChart';
+import { Heatmap } from '../features/Heatmap';
 import { TECHNIQUES } from '../../data/techniques';
 
 import { type DailyLogEntry, type Technique } from '../../types';
@@ -16,7 +17,7 @@ interface JourneyViewProps {
 
 export const DesktopJourneyView = ({ compliance, dailyLog, onOpenSettings }: JourneyViewProps) => {
     const { user, signInWithGoogle, signOut } = useAuth();
-    const { stats, userStats, techniqueStats } = useAnalytics();
+    const { stats, userStats, techniqueStats, heatmapData } = useAnalytics();
 
 
     const todayMinutes = Math.floor(Object.values(dailyLog?.techSeconds || {}).reduce((a: number, b: number) => a + b, 0) / 60);
@@ -152,9 +153,12 @@ export const DesktopJourneyView = ({ compliance, dailyLog, onOpenSettings }: Jou
                             </div>
 
                             <div className="pt-6 border-t border-white/5">
-                                <div className="flex justify-between items-center text-sm text-white/40">
-                                    <span>consistency is key</span>
-                                    <span>{stats.filter(s => s.minutes > 0).length} / 7 active days</span>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center text-xs font-bold text-white/30 uppercase tracking-widest">
+                                        <span>Consistency</span>
+                                        <span>{stats.filter(s => s.minutes > 0).length} / 7 active days</span>
+                                    </div>
+                                    <Heatmap data={heatmapData} />
                                 </div>
                             </div>
                         </div>

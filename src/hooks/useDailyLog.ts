@@ -106,20 +106,25 @@ export const useDailyLog = () => {
         syncFromCloud();
     }, [user, todayKey]);
 
-    // 3. Sync TO Cloud (Debounced or immediate? Immediate for now)
-    const syncToCloud = async (log: DailyLog) => {
+    // 3. Sync TO Cloud (Debounced)
+    useEffect(() => {
         if (!user) return;
 
-        const dayData = log[todayKey];
+        const dayData = dailyLog[todayKey];
         if (!dayData) return;
 
-        const docRef = doc(db, 'users', user.uid, 'dailyLogs', todayKey);
-        try {
-            await setDoc(docRef, dayData, { merge: true });
-        } catch (e) {
-            console.error("Save Error", e);
-        }
-    };
+        // Debounce sync to avoid FS writes on every second
+        const timeoutId = setTimeout(async () => {
+            const docRef = doc(db, 'users', user.uid, 'dailyLogs', todayKey);
+            try {
+                await setDoc(docRef, dayData, { merge: true });
+            } catch (e) {
+                console.error("Save Error", e);
+            }
+        }, 60000); // 60 seconds debounce
+
+        return () => clearTimeout(timeoutId);
+    }, [dailyLog, user, todayKey]);
 
     const logSeconds = (techId: string, seconds: number) => {
         setDailyLog((prev: DailyLog) => {
@@ -139,9 +144,6 @@ export const useDailyLog = () => {
                 ...prev,
                 [todayKey]: updatedDay,
             };
-
-            // Trigger cloud sync
-            syncToCloud(updatedLog); // Fire and forget
 
             return updatedLog;
         });

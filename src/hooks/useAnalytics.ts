@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { db } from '../services/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 
 interface DayStat {
     date: string; // YYYY-MM-DD
@@ -12,64 +12,55 @@ interface DayStat {
 export const useAnalytics = () => {
     const { user } = useAuth();
     const [stats, setStats] = useState<DayStat[]>([]);
+    const [heatmapData, setHeatmapData] = useState<Record<string, number>>({});
     const [userStats, setUserStats] = useState({ streak: 0, totalMinutes: 0 });
     const [techniqueStats, setTechniqueStats] = useState<Record<string, number>>({});
 
     useEffect(() => {
+
         const fetchStats = async () => {
-            const days: { date: string; dayName: string; obj: Date }[] = [];
-            const today = new Date();
-
-            // Generate last 7 days keys
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date(today);
-                d.setDate(d.getDate() - i);
-                days.push({
-                    date: d.toISOString().slice(0, 10),
-                    dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
-                    obj: d
-                });
-            }
-
             const dataMap: Record<string, number> = {};
             const techAgg: Record<string, number> = {}; // Aggregate seconds per technique
 
             if (user) {
-                // 1. Fetch Weekly Data
-                const promises = days.map(d => {
-                    const docId = d.date.replaceAll('/', '-');
-                    return getDoc(doc(db, 'users', user.uid, 'dailyLogs', docId));
-                });
+                // 1. Fetch History (Last 365 days) from Collection
+                try {
+                    const logsRef = collection(db, 'users', user.uid, 'dailyLogs');
+                    // IDs are YYYY-MM-DD, so lex order by ID desc gives us recent first
+                    const q = query(logsRef, orderBy('__name__', 'desc'), limit(365));
+                    const snapshot = await getDocs(q);
 
-                // 2. Fetch User Summary Stats
-                const summaryPromise = getDoc(doc(db, 'users', user.uid, 'stats', 'summary'));
-
-                const [summarySnap, ...snapshots] = await Promise.all([summaryPromise, ...promises]);
-
-                // Process Summary
-                if (summarySnap.exists()) {
-                    const s = summarySnap.data();
-                    setUserStats({
-                        streak: s.currentStreak || 0,
-                        totalMinutes: Math.floor(s.totalMinutes || 0)
-                    });
-                } else {
-                    setUserStats({ streak: 0, totalMinutes: 0 });
-                }
-
-                snapshots.forEach((snap, i) => {
-                    if (snap.exists()) {
-                        const val = snap.data();
+                    snapshot.forEach(doc => {
+                        const val = doc.data();
+                        const date = doc.id;
                         const dailyTechSeconds = val.techSeconds || {};
                         const totalSecs = Object.values(dailyTechSeconds).reduce((a: number, b: unknown) => a + (b as number), 0);
-                        dataMap[days[i].date] = Math.floor(totalSecs / 60);
+                        dataMap[date] = Math.floor(totalSecs / 60);
 
                         // Aggregate Technique Stats
                         Object.entries(dailyTechSeconds).forEach(([techId, secs]) => {
                             techAgg[techId] = (techAgg[techId] || 0) + (secs as number);
                         });
+                    });
+
+                    // 2. Fetch User Summary Stats
+                    const summarySnap = await getDoc(doc(db, 'users', user.uid, 'stats', 'summary'));
+                    if (summarySnap.exists()) {
+                        const s = summarySnap.data();
+                        setUserStats({
+                            streak: s.currentStreak || 0,
+                            totalMinutes: Math.floor(s.totalMinutes || 0)
+                        });
+                    } else {
+                        // Fallback: Calculate from local aggregation if summary missing
+                        // (Rough estimate as collection limit is 365)
+                        const totalMins = Object.values(dataMap).reduce((a, b) => a + b, 0);
+                        setUserStats({ streak: 0, totalMinutes: totalMins });
                     }
-                });
+
+                } catch (e) {
+                    console.error("Error fetching analytics", e);
+                }
 
             } else {
                 // Fetch from LocalStorage
@@ -78,23 +69,18 @@ export const useAnalytics = () => {
                     const updates = raw ? JSON.parse(raw) : {};
                     let localTotalSecs = 0;
 
-                    Object.values(updates).forEach((day: unknown) => {
+                    Object.entries(updates).forEach(([date, day]) => {
                         const d = day as { techSeconds?: Record<string, number> };
-                        localTotalSecs += Object.values(d.techSeconds || {}).reduce((a: number, b: unknown) => a + (b as number), 0);
-                    });
+                        const dailyTechSeconds = d.techSeconds || {};
+                        const totalSecs = Object.values(dailyTechSeconds).reduce((a: number, b: unknown) => a + (b as number), 0);
 
-                    days.forEach(d => {
-                        const entry = updates[d.date] as { techSeconds?: Record<string, number> } | undefined;
-                        if (entry) {
-                            const dailyTechSeconds = entry.techSeconds || {};
-                            const totalSecs = Object.values(dailyTechSeconds).reduce((a: number, b: unknown) => a + (b as number), 0);
-                            dataMap[d.date] = Math.floor(totalSecs / 60);
+                        dataMap[date] = Math.floor(totalSecs / 60);
+                        localTotalSecs += totalSecs;
 
-                            // Aggregate Technique Stats
-                            Object.entries(dailyTechSeconds).forEach(([techId, secs]) => {
-                                techAgg[techId] = (techAgg[techId] || 0) + (secs as number);
-                            });
-                        }
+                        // Aggregate Technique Stats
+                        Object.entries(dailyTechSeconds).forEach(([techId, secs]) => {
+                            techAgg[techId] = (techAgg[techId] || 0) + (secs as number);
+                        });
                     });
 
                     setUserStats({ streak: 0, totalMinutes: Math.floor(localTotalSecs / 60) });
@@ -103,11 +89,22 @@ export const useAnalytics = () => {
                 }
             }
 
-            setStats(days.map(d => ({
-                date: d.date,
-                dayName: d.dayName,
-                minutes: dataMap[d.date] || 0
-            })));
+            setHeatmapData(dataMap);
+
+            // Generate Last 7 Days for Chart
+            const days: DayStat[] = [];
+            const today = new Date();
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - i);
+                const dateKey = d.toISOString().slice(0, 10);
+                days.push({
+                    date: dateKey,
+                    dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
+                    minutes: dataMap[dateKey] || 0
+                });
+            }
+            setStats(days);
 
             // Convert techAgg seconds to minutes
             const techMins: Record<string, number> = {};
@@ -120,5 +117,5 @@ export const useAnalytics = () => {
         fetchStats();
     }, [user]);
 
-    return { stats, userStats, techniqueStats };
+    return { stats, userStats, techniqueStats, heatmapData };
 };
