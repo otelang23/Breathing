@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { db } from '../services/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { EVENING_MANDATORY_THRESHOLDS } from '../data/thresholds';
+import { useSettings } from './useSettings';
 
 interface DailyLog {
     [date: string]: {
@@ -26,18 +26,31 @@ export const useDailyLog = () => {
         }
     });
 
-    // Helper to calculate compliance
+    const { dailyGoal } = useSettings();
+
+    // Helper to calculate compliance (Based on Configured Goals)
     const checkCompliance = (secondsMap: Record<string, number>) => {
-        const mandatoryIds = Object.keys(EVENING_MANDATORY_THRESHOLDS);
-        let doneCount = 0;
-        mandatoryIds.forEach((id) => {
-            const threshold = (EVENING_MANDATORY_THRESHOLDS as Record<string, number>)[id];
-            if ((secondsMap[id] || 0) >= threshold) doneCount += 1;
+        if (!dailyGoal || dailyGoal.length === 0) return { doneCount: 0, total: 0, completed: true };
+
+        let goalsMet = 0;
+
+        dailyGoal.forEach(goal => {
+            let currentSeconds = 0;
+            if (goal.techniqueId === 'any') {
+                currentSeconds = Object.values(secondsMap).reduce((a, b) => a + b, 0);
+            } else {
+                currentSeconds = secondsMap[goal.techniqueId] || 0;
+            }
+
+            if (currentSeconds >= goal.targetMinutes * 60) {
+                goalsMet++;
+            }
         });
+
         return {
-            doneCount,
-            total: mandatoryIds.length,
-            completed: doneCount === mandatoryIds.length
+            doneCount: goalsMet,
+            total: dailyGoal.length,
+            completed: goalsMet === dailyGoal.length
         };
     };
 
@@ -144,7 +157,7 @@ export const useDailyLog = () => {
     const todayLog = useMemo(() => dailyLog[todayKey] || { techSeconds: {}, protocolCompleted: false }, [dailyLog, todayKey]);
 
     // Memoize compliance for UI display
-    const compliance = useMemo(() => checkCompliance(todayLog.techSeconds), [todayLog.techSeconds]);
+    const compliance = useMemo(() => checkCompliance(todayLog.techSeconds), [todayLog.techSeconds, dailyGoal]);
 
     return { dailyLog, todayLog, logSeconds, resetData, compliance };
 };

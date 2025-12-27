@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Wind, Moon, Heart, Zap, Clock, Filter, type LucideIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { RoutineCreatorModal } from '../modals/RoutineCreatorModal';
+import { useSettings } from '../../hooks/useSettings';
 
 import type { Technique } from '../../types';
 
@@ -30,10 +31,27 @@ export const DiscoverView = ({
     saveRoutine,
 }: DiscoverViewProps) => {
 
+    const { dailyGoal } = useSettings();
     const [isCreatorOpen, setIsCreatorOpen] = useState(false);
     const [activeFilter, setActiveFilter] = useState('all');
 
-    const sortedTechniques = useMemo(() => {
+    const sortedTechniques = useMemo<Technique[]>(() => {
+        if (activeFilter === 'protocol') {
+            if (!dailyGoal || dailyGoal.length === 0) return [];
+            return dailyGoal.map(goal => {
+                const originalTech = techniques.find(t => t.id === goal.techniqueId);
+                if (!originalTech) return null;
+                return {
+                    ...originalTech,
+                    meta: {
+                        ...originalTech.meta,
+                        speed: `${goal.targetMinutes} min`
+                    },
+                    targetDurationSec: goal.targetMinutes * 60
+                } as Technique;
+            }).filter((t): t is Technique => t !== null);
+        }
+
         let filtered = [...techniques];
         if (activeFilter !== 'all') {
             filtered = filtered.filter(t => t.categories?.includes(activeFilter));
@@ -44,7 +62,7 @@ export const DiscoverView = ({
             }
             return (a.ranks?.pas || 99) - (b.ranks?.pas || 99);
         });
-    }, [techniques, activeFilter]);
+    }, [techniques, activeFilter, dailyGoal]);
 
 
     return (
@@ -63,7 +81,9 @@ export const DiscoverView = ({
                 </div>
                 {[
                     { id: 'all', label: 'All' },
+                    { id: 'protocol', label: 'Daily Protocol' },
                     { id: 'custom', label: 'Custom', icon: '✨' },
+                    { id: 'manifestation', label: 'LOA', icon: '🌌' }, // Added LOA
                     { id: 'hrv', label: 'HRV', icon: '❤️' },
                     { id: 'sleep', label: 'Sleep', icon: '🌙' },
                     { id: 'stress', label: 'Stress', icon: '🧘' },
@@ -101,12 +121,14 @@ export const DiscoverView = ({
 
                 <div className="flex flex-col gap-4">
                     <AnimatePresence mode="popLayout">
-                        {sortedTechniques.map((tech) => {
+                        {sortedTechniques.map((tech, index) => {
                             const Icon = ICONS[tech.id] || Wind;
+                            const uniqueKey = activeFilter === 'protocol' ? `${tech.id}-${index}` : tech.id;
+
                             return (
                                 <motion.div
                                     layout
-                                    key={tech.id}
+                                    key={uniqueKey}
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}

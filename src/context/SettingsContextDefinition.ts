@@ -1,6 +1,9 @@
 import { createContext } from 'react';
 
-export type Theme = 'midnight' | 'ocean' | 'forest' | 'sunset';
+export type Theme =
+    | 'midnight' | 'ocean' | 'forest' | 'fire' | 'sunset'
+    | 'lavender' | 'charcoal' | 'aurora' | 'gold' | 'arctic'
+    | 'nebula' | 'earth' | 'zen' | 'plasma' | 'void';
 
 export type SoundMode = 'silent' | 'minimal' | 'rich';
 
@@ -23,6 +26,14 @@ export interface SettingsContextType {
     setAudioVariant: (variant: 'standard' | 'binaural' | 'noise') => void;
     voiceEnabled: boolean;
     setVoiceEnabled: (enabled: boolean) => void;
+    dailyGoal: DailyGoal[];
+    setDailyGoal: (goals: DailyGoal[]) => void;
+}
+
+export interface DailyGoal {
+    id: string;
+    techniqueId: string; // 'any' or specific ID like '4-7-8'
+    targetMinutes: number;
 }
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined);

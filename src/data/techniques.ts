@@ -347,5 +347,44 @@ export const TECHNIQUES: Technique[] = [
             { action: 'Inhale', duration: 4000, scale: 1.5, text: 'Inhale (4s)', vibration: [40] },
             { action: 'Exhale', duration: 6000, scale: 1.0, text: 'Exhale (6s)', vibration: [40] },
         ],
+    },
+    {
+        id: 'manifestation',
+        name: 'Quantum Manifestation',
+        tagline: 'Visualise & Attract',
+        description: 'Focus your intent on the inhale, express gratitude on the exhale. Coherence meets visualization.',
+        tip: 'Inhale: Visualize your desire clearly. Exhale: Feel the emotion of already having it.',
+        strength: 'Intention setting, positive emotion, goal alignment',
+        pas: 9.0,
+        audioProfile: { baseFreq: 146.83, binauralBeat: 6 }, // Theta for subconscious access
+        categories: ['manifestation', 'focus', 'balance'],
+        optimalDuration: '10-20 mins',
+        science: {
+            mechanism: 'Combines coherent breathing (heart-brain sync) with emotional visualization, which has been shown to prime the Reticular Activating System (RAS) for goal-relevant opportunities.',
+            benefits: ['Reticular Activation', 'Emotional Coherence', 'Positive Priming']
+        },
+        ranks: {
+            pas: 3,
+            stress: 5,
+            speed: 5,
+            hrv: 2,
+            sleep: 5,
+            deepSleep: 5,
+            discreet: 2,
+        },
+        meta: {
+            discreet: 'Quiet',
+            hrv: '⭐⭐⭐⭐',
+            sleep: 'Visualization',
+            stress: 'Positive',
+            speed: 'Medium',
+            deepSleep: 'Dream Prep'
+        },
+        entrainmentFreq: 6, // Theta
+        color: 'from-amber-400 via-purple-500 to-indigo-600',
+        steps: [
+            { action: 'Inhale', duration: 5500, scale: 1.5, text: 'Receive (5.5s)', vibration: [40] },
+            { action: 'Exhale', duration: 5500, scale: 1.0, text: 'Gratitude (5.5s)', vibration: [40] },
+        ],
     }
 ];

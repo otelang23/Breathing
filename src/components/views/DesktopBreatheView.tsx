@@ -4,6 +4,9 @@ import { Play, Pause, RotateCcw, Info, Wind, Clock } from 'lucide-react';
 import { Orb2 } from '../ui/Orb2';
 import { cn } from '../../lib/utils';;
 
+import { useSettings } from '../../hooks/useSettings';
+import { GRADIENTS } from '../../constants/themes';
+
 import type { Technique, SessionStats } from '../../types';
 
 interface DesktopBreatheViewProps {
@@ -23,6 +26,7 @@ interface DesktopBreatheViewProps {
         reset: () => void;
         stop: () => void;
     };
+    sessionRemaining?: string;
 }
 
 export const DesktopBreatheView = ({
@@ -33,8 +37,11 @@ export const DesktopBreatheView = ({
     stepProgress,
     displaySeconds,
     sessionStats,
-    controls
+    controls,
+    sessionRemaining
 }: DesktopBreatheViewProps) => {
+    const { theme } = useSettings();
+    const currentGradient = GRADIENTS[theme];
 
     // Simple interaction state
     const [hoveredControl, setHoveredControl] = useState<string | null>(null);
@@ -57,7 +64,6 @@ export const DesktopBreatheView = ({
                             </div>
                         )}
                     </div>
-                    {/* Tagline */}
                     {/* Tagline */}
                     <div className="text-white/40 text-sm font-light tracking-wide">{selectedTech.tagline}</div>
 
@@ -135,8 +141,12 @@ export const DesktopBreatheView = ({
                     <h3 className="text-xs font-bold text-white/30 uppercase tracking-widest">Session Stats</h3>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <div className="text-3xl font-thin text-white font-mono tracking-tighter">{sessionStats.formatTime(sessionStats.totalSeconds)}</div>
-                            <div className="text-xs text-white/40 font-medium">Duration</div>
+                            <div className="text-3xl font-thin text-white font-mono tracking-tighter">
+                                {sessionRemaining ? sessionRemaining : sessionStats.formatTime(sessionStats.totalSeconds)}
+                            </div>
+                            <div className="text-xs text-white/40 font-medium">
+                                {sessionRemaining ? 'Remaining' : 'Duration'}
+                            </div>
                         </div>
                         <div>
                             <div className="text-3xl font-thin text-white font-mono tracking-tighter">{sessionStats.cycleCount}</div>
@@ -160,6 +170,7 @@ export const DesktopBreatheView = ({
                         segments={selectedTech.steps ? selectedTech.steps.map(s => s.duration) : undefined}
                         currentStepIndex={currentStepIndex}
                         color={selectedTech.color}
+                        gradientColors={currentGradient}
                     />
                 </div>
 

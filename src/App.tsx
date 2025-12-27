@@ -49,11 +49,20 @@ const AppContent = () => {
     // Helper for time
     const formatTime = (secs: number) => {
         const mins = Math.floor(secs / 60);
-        const remainingSecs = secs % 60;
+        const remainingSecs = Math.floor(secs % 60); // Ensure integer seconds for display
         return `${mins}:${remainingSecs.toString().padStart(2, '0')}`;
     };
+
+    // 1. Step Timer (Central Display)
     const rawRemaining = (currentStep.duration * (1 - stepProgress / 100)) / 1000;
     const displaySeconds = Math.max(0, rawRemaining).toFixed(1);
+
+    // 2. Session Timer (For Daily Protocol)
+    let sessionRemainingStr: string | undefined = undefined;
+    if (selectedTech.targetDurationSec) {
+        const rem = Math.max(0, selectedTech.targetDurationSec - totalSeconds);
+        sessionRemainingStr = formatTime(rem);
+    }
 
     // Responsive Check
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -63,23 +72,19 @@ const AppContent = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Theme Logic: User Preference (Idle) vs Technique (Active)
+    // Theme Logic: User Preference takes precedence unless active session demands specific overrides
     const getActiveTheme = () => {
         if (isActive) {
-            // Active Session: Use Technique Color
-            if (selectedTech.id === 'sigh') return 'fire';
-            if (selectedTech.id === 'box') return 'forest';
-            if (selectedTech.id === 'coherent') return 'ocean';
-            if (selectedTech.id === 'sleep_478') return 'calm';
-            if (selectedTech.id === 'bhramari') return 'fire'; // Added mapping
-            return 'default';
+            // Optional: If you want specific techniques to force a theme (like LOA), keep it here.
+            if (selectedTech.id === 'manifestation') return 'manifest';
+
+            // Otherwise, respect user choice even during session (or revert to user choice)
+            // But usually, users like their chosen theme to persist.
+            return userTheme;
         }
-        // Idle: Use User Setting, ensuring we map "sunset" -> "fire" etc correctly
-        if (userTheme === 'sunset') return 'fire';
-        if (userTheme === 'forest') return 'forest';
-        if (userTheme === 'ocean') return 'ocean';
-        if (userTheme === 'midnight') return 'calm';
-        return 'default';
+
+        // Inactive: Always use user preference
+        return userTheme;
     };
 
     const { customTechniques, saveRoutine, deleteRoutine } = useCustomRoutines();
@@ -101,11 +106,12 @@ const AppContent = () => {
         onRunPreset: startPreset,
         techniques: allTechniques,
         saveRoutine,
-        deleteRoutine
+        deleteRoutine,
+        sessionRemaining: sessionRemainingStr
     };
 
     return (
-        <div className={`relative w-full h-[100dvh] overflow-hidden bg-black text-white font-sans selection:bg-white/30`}>
+        <div className={`relative w-full h-[100dvh] overflow-hidden text-white font-sans selection:bg-white/30`}>
             {/* 1. Unified Background Layer */}
             <AuroraBackground
                 theme={getActiveTheme()}

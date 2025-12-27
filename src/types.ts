@@ -46,6 +46,7 @@ export interface Technique {
     steps: TechniqueSteps[];
     categories?: string[];
     isCustom?: boolean;
+    targetDurationSec?: number;
 }
 
 export interface PresetSegment {

@@ -2,6 +2,8 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { X, Volume2, VolumeX, Smartphone, Monitor } from 'lucide-react';
 import { useSettings } from '../../hooks/useSettings';
+import { THEMES } from '../../constants/themes';
+import { TECHNIQUES } from '../../data/techniques';
 import { type Theme } from '../../context/SettingsContextDefinition';
 import { cn } from '../../lib/utils';
 
@@ -53,12 +55,21 @@ export const SettingsModal = ({ onClose }: SettingsModalProps) => {
         officeMode, setOfficeMode
     } = useSettings();
 
-    const THEMES = [
-        { id: 'midnight', label: 'Midnight', color: 'bg-indigo-900' },
-        { id: 'ocean', label: 'Ocean', color: 'bg-blue-900' },
-        { id: 'forest', label: 'Forest', color: 'bg-emerald-900' },
-        { id: 'sunset', label: 'Sunset', color: 'bg-orange-900' },
-    ];
+    // Use the 15 themes from constants
+    const themesList = Object.values(THEMES);
+    const { dailyGoal, setDailyGoal } = useSettings();
+
+    const [localGoals, setLocalGoals] = useState(dailyGoal);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSaveGoals = async () => {
+        setIsSaving(true);
+        // Simulate a small delay for feedback or await sync if possible (context handles sync effect)
+        setDailyGoal(localGoals);
+        // Short delay to show feedback
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setIsSaving(false);
+    };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4">
@@ -70,7 +81,7 @@ export const SettingsModal = ({ onClose }: SettingsModalProps) => {
 
             <motion.div
                 initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-                className="relative bg-[#0f172a] border-t sm:border border-white/10 w-full sm:max-w-md overflow-hidden rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl"
+                className="relative bg-[#0f172a] border-t sm:border border-white/10 w-full sm:max-w-md overflow-hidden rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto"
             >
                 <div className="flex items-center justify-between mb-8">
                     <h2 className="text-xl font-light text-white tracking-tight">Preferences</h2>
@@ -83,18 +94,29 @@ export const SettingsModal = ({ onClose }: SettingsModalProps) => {
                     {/* Theme Section */}
                     <div className="space-y-3">
                         <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Theme</label>
-                        <div className="grid grid-cols-4 gap-2">
-                            {THEMES.map((t) => (
+                        <div className="grid grid-cols-5 gap-2">
+                            {themesList.map((t) => (
                                 <button
                                     key={t.id}
                                     onClick={() => setTheme(t.id as Theme)}
+                                    // Tooltip/Label on hover could be good, but simple grid is cleaner for mobile
                                     className={cn(
-                                        "flex flex-col items-center gap-2 p-2 rounded-xl border transition-all",
-                                        theme === t.id ? "bg-white/10 border-white/40" : "bg-transparent border-transparent hover:bg-white/5"
+                                        "group flex flex-col items-center gap-1 p-1 rounded-xl transition-all relative",
+                                        theme === t.id ? "bg-white/10 ring-1 ring-white/40" : "hover:bg-white/5"
                                     )}
+                                    title={t.label}
                                 >
-                                    <div className={`w-8 h-8 rounded-full ${t.color} border border-white/10 shadow-lg`} />
-                                    <span className="text-[10px] text-white/60">{t.label}</span>
+                                    <div
+                                        className="w-10 h-10 rounded-full border border-white/10 shadow-lg transition-transform group-active:scale-95"
+                                        style={{ backgroundColor: t.color }}
+                                    >
+                                        {theme === t.id && (
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <Check className="w-4 h-4 text-white drop-shadow-md" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="text-[9px] text-white/40 group-hover:text-white/80 transition-colors truncate w-full text-center">{t.label}</span>
                                 </button>
                             ))}
                         </div>
@@ -195,6 +217,96 @@ export const SettingsModal = ({ onClose }: SettingsModalProps) => {
                             </div>
                             <HealthToggle provider="google" />
                         </div>
+                    </div>
+
+                    {/* Daily Goal Configuration */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Daily Protocol</label>
+                            <button
+                                onClick={() => {
+                                    setLocalGoals([
+                                        ...localGoals,
+                                        { id: Date.now().toString(), techniqueId: 'any', targetMinutes: 5 }
+                                    ]);
+                                }}
+                                className="text-[10px] bg-white/10 hover:bg-white/20 px-2 py-1 rounded text-white transition-colors"
+                            >
+                                + Add Goal
+                            </button>
+                        </div>
+
+                        <div className="space-y-2">
+                            {localGoals.map((goal, idx) => (
+                                <div key={goal.id || idx} className="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
+                                    {/* Tech Selector */}
+                                    <select
+                                        className="bg-transparent text-xs text-white outline-none w-[120px] bg-black/20 rounded px-1 py-1"
+                                        value={goal.techniqueId}
+                                        onChange={(e) => {
+                                            const newGoals = [...localGoals];
+                                            newGoals[idx].techniqueId = e.target.value;
+                                            setLocalGoals(newGoals);
+                                        }}
+                                    >
+                                        <option value="any">Any Technique</option>
+                                        {TECHNIQUES.map(t => (
+                                            <option key={t.id} value={t.id}>{t.name}</option>
+                                        ))}
+                                    </select>
+
+                                    {/* Duration Input */}
+                                    <div className="flex items-center gap-1 bg-black/20 rounded px-2 py-1">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="120"
+                                            className="w-8 bg-transparent text-xs text-white text-right outline-none"
+                                            value={goal.targetMinutes}
+                                            onChange={(e) => {
+                                                const newGoals = [...localGoals];
+                                                newGoals[idx].targetMinutes = parseInt(e.target.value) || 1;
+                                                setLocalGoals(newGoals);
+                                            }}
+                                        />
+                                        <span className="text-[10px] text-white/40">min</span>
+                                    </div>
+
+                                    {/* Delete */}
+                                    <button
+                                        onClick={() => {
+                                            const newGoals = localGoals.filter((_, i) => i !== idx);
+                                            setLocalGoals(newGoals);
+                                        }}
+                                        className="ml-auto p-1.5 text-white/20 hover:text-red-400 hover:bg-white/5 rounded-full transition-colors"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            ))}
+                            {localGoals.length === 0 && (
+                                <p className="text-xs text-white/30 italic text-center py-2">No active goals.</p>
+                            )}
+                        </div>
+
+                        {/* Save Button */}
+                        <button
+                            onClick={handleSaveGoals}
+                            disabled={isSaving}
+                            className={cn(
+                                "w-full py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2",
+                                isSaving ? "bg-white/5 text-white/40" : "bg-indigo-500 hover:bg-indigo-400 text-white shadow-lg shadow-indigo-500/20"
+                            )}
+                        >
+                            {isSaving ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                "Save Protocol "
+                            )}
+                        </button>
                     </div>
                 </div>
             </motion.div>

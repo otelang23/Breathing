@@ -1,10 +1,14 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, RotateCcw, Camera, Music, Activity } from 'lucide-react';
+import { Play, Pause, RotateCcw, Camera, Activity, Info } from 'lucide-react';
 import { Orb2 } from '../ui/Orb2';
+import { SoundMenu } from '../ui/SoundMenu';
 import { BiofeedbackEngine } from '../../services/BiofeedbackEngine';
 import { GenerativeAudio } from '../../services/GenerativeAudio';
 import { cn } from '../../lib/utils';
+
+import { useSettings } from '../../hooks/useSettings';
+import { GRADIENTS } from '../../constants/themes';
 
 import type { Technique, SessionStats } from '../../types';
 
@@ -25,6 +29,7 @@ interface BreatheViewProps {
         reset: () => void;
         stop: () => void;
     };
+    sessionRemaining?: string;
 }
 
 export const BreatheView = ({
@@ -35,14 +40,19 @@ export const BreatheView = ({
     stepProgress,
     displaySeconds,
     sessionStats,
-    controls
+    controls,
+    sessionRemaining
 }: BreatheViewProps) => {
     // Local State
+    const { theme } = useSettings();
+    const currentGradient = GRADIENTS[theme];
+
     const [bioEnabled, setBioEnabled] = useState(false);
     const [audioEnabled, setAudioEnabled] = useState(false);
+    const [showDetails, setShowDetails] = useState(false); // New Details State
     const [hr, setHr] = useState<number | null>(null);
 
-    // Engines
+    // ... (keep engines) ...
     const bioEngine = useRef<BiofeedbackEngine | null>(null);
     const audioEngine = useRef<GenerativeAudio | null>(null);
 
@@ -50,7 +60,6 @@ export const BreatheView = ({
     useEffect(() => {
         bioEngine.current = new BiofeedbackEngine((newBpm) => {
             setHr(newBpm);
-            // Biofeedback modulation is handled internally or we can pass it to engine if needed
         });
 
         audioEngine.current = new GenerativeAudio();
@@ -61,7 +70,7 @@ export const BreatheView = ({
         };
     }, []);
 
-    // Audio State Updates
+    // ... (keep Audio State Updates) ...
     useEffect(() => {
         if (!audioEnabled || !audioEngine.current) return;
 
@@ -79,7 +88,6 @@ export const BreatheView = ({
                 setBioEnabled(true);
             } catch (err) {
                 console.warn("Camera denied or not found", err);
-                // Optionally show UI feedback here
             }
         } else {
             bioEngine.current?.stop();
@@ -99,73 +107,109 @@ export const BreatheView = ({
         }
     };
 
+    const { totalSeconds, cycleCount } = sessionStats;
+
     return (
         <div className="relative w-full h-full flex flex-col p-6">
 
             {/* Top Bar: Floating Tools */}
             <div className="absolute top-4 left-0 w-full flex justify-between px-6 z-20">
-                <div className="flex gap-4">
+                <div className="flex gap-6">
                     {/* Biofeedback Toggle */}
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={toggleBio}
-                        className={cn(
-                            "flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md border transition-colors",
-                            bioEnabled ? "bg-rose-500/20 border-rose-500 text-rose-200" : "bg-white/5 border-white/10 text-white/40"
-                        )}
-                        title="Toggle Biofeedback (Camera)"
-                    >
-                        {bioEnabled ? <Activity className="w-5 h-5 animate-pulse" /> : <Camera className="w-5 h-5" />}
-                    </motion.button>
+                    <div className="flex flex-col items-center gap-1">
+                        <motion.button
+                            whileTap={{ scale: 0.9 }}
+                            onClick={toggleBio}
+                            className={cn(
+                                "flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md border transition-colors",
+                                bioEnabled ? "bg-rose-500/20 border-rose-500 text-rose-200" : "bg-white/5 border-white/10 text-white/40"
+                            )}
+                            title="Toggle Biofeedback (Camera)"
+                        >
+                            {bioEnabled ? <Activity className="w-5 h-5 animate-pulse" /> : <Camera className="w-5 h-5" />}
+                        </motion.button>
+                        <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Bio</span>
+                    </div>
 
-                    {/* Music Toggle */}
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={toggleAudio}
-                        className={cn(
-                            "flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md border transition-colors",
-                            audioEnabled ? "bg-indigo-500/20 border-indigo-500 text-indigo-200" : "bg-white/5 border-white/10 text-white/40"
-                        )}
-                        title="Toggle Generative Audio"
-                    >
-                        <Music className="w-5 h-5" />
-                    </motion.button>
+                    {/* Sound Menu */}
+                    <div className="flex flex-col items-center gap-1">
+                        <SoundMenu
+                            engine={audioEngine.current}
+                            isEnabled={audioEnabled}
+                            onToggle={toggleAudio}
+                        />
+                        <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Audio</span>
+                    </div>
                 </div>
 
-                {/* Stats Pill */}
+                {/* Stats Pill - Premium Glass */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="flex items-center gap-3 px-4 py-2 bg-black/20 backdrop-blur-lg rounded-full border border-white/5 text-xs font-mono text-white/60"
+                    className="flex items-center gap-3 px-5 py-2.5 glass-panel rounded-full text-xs font-medium tracking-wide text-white/80"
                 >
-                    <span>{sessionStats.formatTime(sessionStats.totalSeconds)}</span>
+                    <span className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--primary))]" />
+                        {sessionRemaining || new Date((totalSeconds || 0) * 1000).toISOString().substr(14, 5)}
+                    </span>
                     <span className="w-px h-3 bg-white/10" />
-                    <span>{sessionStats.cycleCount} Cycles</span>
+                    <span>{cycleCount || 0} Cycles</span>
                 </motion.div>
             </div>
 
             {/* Main Center Stage */}
             <div className="flex-1 flex flex-col items-center justify-center w-full z-10 min-h-0">
-                {/* 1. The Orb */}
-                <div className="relative mb-8 transform scale-90 md:scale-100 transition-transform">
+                {/* Orb Container */}
+                <div className="relative z-10 scale-90 sm:scale-100">
                     <Orb2
                         isActive={isActive}
                         phase={currentStep.action}
                         progress={stepProgress}
                         color={selectedTech.color}
+                        segments={selectedTech.steps.map(s => s.duration)}
                         currentStepIndex={currentStepIndex}
-                        segments={selectedTech.steps?.map((s) => s.duration) || [4, 4, 4, 4]} // Fallback or proper steps
+                        gradientColors={currentGradient}
                     />
                 </div>
 
-                {/* New: Tagline & Duration */}
-                <div className="text-center mb-6 space-y-1">
-                    <p className="text-white/40 text-sm font-light tracking-wide">{selectedTech.tagline}</p>
-                    {selectedTech.optimalDuration && (
-                        <p className="text-[10px] text-white/30 font-mono uppercase tracking-wider">
-                            Rec: {selectedTech.optimalDuration}
-                        </p>
+                {/* Panic Button (Hidden if Active) */}
+                <AnimatePresence>
+                    {!isActive && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="flex flex-col items-center gap-2"
+                        >
+                            <span className="text-[10px] items-center tracking-[0.2em] font-medium text-white/40 uppercase">
+                                Panic Button
+                            </span>
+                            <span className="text-[10px] items-center tracking-[0.1em] font-medium text-[hsl(var(--primary))] uppercase opacity-60">
+                                REC: 1-3 MINUTES
+                            </span>
+                        </motion.div>
                     )}
+                </AnimatePresence>
+
+                {/* Technique Name & Info */}
+                <div className="text-center space-y-1 relative group">
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center justify-center gap-3"
+                    >
+                        <h2 className="text-4xl font-extralight tracking-tight text-white mb-1">
+                            {selectedTech.name}
+                        </h2>
+                        {!isActive && (
+                            <button
+                                onClick={() => setShowDetails(true)}
+                                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all"
+                            >
+                                <Info className="w-5 h-5" />
+                            </button>
+                        )}
+                    </motion.div>
                 </div>
 
                 {/* 2. Typography & Instructions */}
@@ -176,7 +220,7 @@ export const BreatheView = ({
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-4xl md:text-5xl font-thin tracking-wide text-white drop-shadow-2xl"
+                            className="text-4xl md:text-5xl font-thin tracking-wide text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
                         >
                             {currentStep.text}
                         </motion.h2>
@@ -188,7 +232,7 @@ export const BreatheView = ({
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                         >
-                            <span className="text-5xl font-mono font-light text-white/90 tabular-nums">
+                            <span className="text-5xl font-mono font-light text-white/90 tabular-nums drop-shadow-lg">
                                 {displaySeconds}
                             </span>
 
@@ -196,14 +240,14 @@ export const BreatheView = ({
                                 {hr && (
                                     <motion.div
                                         initial={{ scale: 0 }} animate={{ scale: 1 }}
-                                        className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 text-xs font-bold"
+                                        className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-100 text-xs font-bold border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.2)]"
                                     >
                                         ♥ {hr} BPM
                                     </motion.div>
                                 )}
-                                {selectedTech.pas && (
-                                    <div className="px-2 py-0.5 rounded bg-white/5 text-white/40 text-[10px] font-bold border border-white/5">
-                                        PAS {selectedTech.pas}
+                                {selectedTech.id === 'box' && ( // Example check for logic if needed
+                                    <div className="px-2 py-0.5 rounded bg-white/10 text-white/50 text-[10px] font-bold border border-white/10">
+                                        PAS
                                     </div>
                                 )}
                             </div>
@@ -212,32 +256,97 @@ export const BreatheView = ({
                 </div>
             </div>
 
-            {/* Bottom Controls: Static Flex Block (No Overlap) */}
-            <div className="w-full flex justify-center gap-8 z-20 pb-20 md:pb-8 shrink-0">
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={controls.reset}
-                    className="p-4 rounded-full bg-white/5 backdrop-blur border border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
-                >
-                    <RotateCcw className="w-6 h-6" />
-                </motion.button>
+            {/* Main Controls - Premium Glass Buttons */}
+            <div className="w-full flex justify-center gap-8 z-20 pb-36 md:pb-12 shrink-0">
+                <AnimatePresence mode="wait">
+                    {!isActive ? (
+                        <motion.button
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={controls.toggle}
+                            className="w-24 h-24 rounded-[32px] bg-white text-black flex flex-col items-center justify-center shadow-[0_0_40px_hsla(var(--primary)/0.3)] hover:shadow-[0_0_60px_hsla(var(--primary)/0.5)] transition-shadow duration-500"
+                        >
+                            <Play className="w-8 h-8 ml-1 mb-1" fill="currentColor" />
+                            <span className="text-[10px] font-bold tracking-widest uppercase opacity-60">Start</span>
+                        </motion.button>
+                    ) : (
+                        <>
+                            <motion.button
+                                initial={{ x: 20, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                exit={{ x: 20, opacity: 0 }}
+                                onClick={controls.reset}
+                                className="w-16 h-16 rounded-full glass-button flex flex-col items-center justify-center text-white/60 hover:text-white"
+                            >
+                                <RotateCcw className="w-5 h-5 mb-0.5" />
+                                <span className="text-[9px] font-medium tracking-wider uppercase">Reset</span>
+                            </motion.button>
 
-                <motion.button
-                    layout
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={controls.toggle}
-                    className={cn(
-                        "flex items-center justify-center w-20 h-20 rounded-3xl backdrop-blur-xl shadow-2xl transition-all border",
-                        isActive
-                            ? "bg-white/10 border-white/20 text-white"
-                            : "bg-white text-slate-900 border-white"
+                            <motion.button
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={controls.toggle}
+                                className="w-24 h-24 rounded-[32px] glass-panel bg-white/10 text-white flex flex-col items-center justify-center border-white/20"
+                            >
+                                <Pause className="w-8 h-8 mb-1" fill="currentColor" />
+                                <span className="text-[10px] font-bold tracking-widest uppercase opacity-60">Pause</span>
+                            </motion.button>
+                        </>
                     )}
-                >
-                    {isActive ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current ml-1" />}
-                </motion.button>
+                </AnimatePresence>
             </div>
+
+            {/* Details Drawer / Modal */}
+            <AnimatePresence>
+                {showDetails && (
+                    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setShowDetails(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+                            className="relative w-full max-w-md bg-[#0f172a] rounded-t-3xl p-8 border-t border-white/10 shadow-2xl space-y-6"
+                        >
+                            <div className="w-12 h-1 rounded-full bg-white/20 mx-auto" />
+
+                            <div>
+                                <h3 className="text-2xl font-light text-white">{selectedTech.name}</h3>
+                                <p className="text-sm text-white/60 mt-2 leading-relaxed">
+                                    {selectedTech.id === 'box' ? "Used by Navy SEALs to regain focus and reduce acute stress instantly." :
+                                        selectedTech.id === 'sleep_478' ? "Dr. Andrew Weil's famous technique for falling asleep in under 60 seconds." :
+                                            selectedTech.id === 'coherent' ? "Aligns heart and brain rhythms to enter a state of flow and balance." :
+                                                "A powerful technique to regulate your nervous system."}
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <h4 className="text-xs font-bold text-white/30 uppercase tracking-widest">Technique Pattern</h4>
+                                <div className="flex gap-2">
+                                    {selectedTech.steps.map((s, i) => (
+                                        <div key={i} className="flex-1 p-3 rounded-xl bg-white/5 border border-white/5 flex flex-col items-center gap-1">
+                                            <span className="text-xs text-white/50 uppercase">{s.action}</span>
+                                            <span className="text-xl font-mono text-white">{s.duration}s</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setShowDetails(false)}
+                                className="w-full py-4 rounded-xl bg-white text-black font-bold tracking-widest uppercase text-xs hover:bg-white/90 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

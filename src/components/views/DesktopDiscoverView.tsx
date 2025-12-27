@@ -5,6 +5,7 @@ import { cn } from '../../lib/utils';
 import { TechniqueDetailModal } from '../modals/TechniqueDetailModal';
 import { RoutineCreatorModal } from '../modals/RoutineCreatorModal';
 import { useAuth } from '../../hooks/useAuth';
+import { useSettings } from '../../hooks/useSettings';
 
 import { type LucideIcon } from 'lucide-react';
 
@@ -20,7 +21,9 @@ const ICONS: Record<string, LucideIcon> = {
 // Legacy Filter IDs
 const FILTERS = [
     { id: 'all', label: 'All' },
+    { id: 'protocol', label: 'Daily Protocol', icon: '📅' },
     { id: 'custom', label: 'Custom', icon: '✨' },
+    { id: 'manifestation', label: 'LOA', icon: '🌌' },
     { id: 'panic', label: 'Panic', icon: '🚨' },
     { id: 'interview', label: 'Interview', icon: '💼' },
     { id: 'sleep', label: 'Sleep', icon: '🌙' },
@@ -35,7 +38,7 @@ import type { Technique } from '../../types';
 interface DesktopDiscoverViewProps {
     techniques: Technique[];
     onSelectTech: (tech: Technique) => void;
-    onRunPreset: (presetId: string) => void;
+    // onRunPreset: (presetId: string) => void; // Unused
     saveRoutine: (technique: Technique) => void;
     deleteRoutine: (id: string) => void;
 }
@@ -48,11 +51,34 @@ export const DesktopDiscoverView = ({
 }: DesktopDiscoverViewProps) => {
 
     const { user, signInWithGoogle, signOut } = useAuth();
+    const { dailyGoal } = useSettings();
     const [activeFilter, setActiveFilter] = useState('all');
     const [viewDetailTech, setViewDetailTech] = useState<Technique | null>(null);
     const [isCreatorOpen, setIsCreatorOpen] = useState(false);
 
-    const sortedTechniques = useMemo(() => {
+    const sortedTechniques = useMemo<Technique[]>(() => {
+        // Special Case: Daily Protocol
+        if (activeFilter === 'protocol') {
+            if (!dailyGoal || dailyGoal.length === 0) return [];
+
+            return dailyGoal.map(goal => {
+                const originalTech = techniques.find(t => t.id === goal.techniqueId);
+                // Handle "Any Technique" if needed, or skip. Assuming 'any' maps to nothing or handled elsewhere.
+                // If ID is 'any', we might want to show a generic placeholder or filter it out here.
+                if (!originalTech) return null;
+
+                // Return a modified copy with the goal duration
+                return {
+                    ...originalTech,
+                    meta: {
+                        ...originalTech.meta,
+                        speed: `${goal.targetMinutes} min` // Override duration string
+                    },
+                    targetDurationSec: goal.targetMinutes * 60 // Inject target seconds
+                } as Technique;
+            }).filter((t): t is Technique => t !== null);
+        }
+
         let filtered = [...techniques];
 
         // 1. Filter by Category (if not 'all')
@@ -69,7 +95,7 @@ export const DesktopDiscoverView = ({
             // Default sort by PAS for 'all' or non-rank filters
             return (a.ranks?.pas || 99) - (b.ranks?.pas || 99);
         });
-    }, [techniques, activeFilter]);
+    }, [techniques, activeFilter, dailyGoal]);
 
     return (
         <div className="w-full h-full p-8 overflow-y-auto custom-scrollbar">
@@ -139,12 +165,16 @@ export const DesktopDiscoverView = ({
                 {/* Main Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-24">
                     <AnimatePresence mode="popLayout">
-                        {sortedTechniques.map((tech) => {
+                        {sortedTechniques.map((tech, index) => {
+                            // Ensure tech is not null (TS should know due to filter, but defensive coding helps)
+                            if (!tech) return null;
                             const Icon = ICONS[tech.id] || Wind;
+                            // Protocol goals allow duplicates. So we should use a composite key for protocol view, or just index.
+                            const uniqueKey = activeFilter === 'protocol' ? `${tech.id}-${index}` : tech.id;
 
                             return (
                                 <motion.button
-                                    key={tech.id}
+                                    key={uniqueKey}
                                     layout
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}

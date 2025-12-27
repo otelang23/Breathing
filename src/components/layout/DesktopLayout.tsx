@@ -28,6 +28,7 @@ interface LayoutProps {
     techniques: Technique[];
     saveRoutine: (t: Technique) => void;
     deleteRoutine: (id: string) => void;
+    sessionRemaining?: string;
 }
 
 export const DesktopLayout = ({
@@ -45,9 +46,10 @@ export const DesktopLayout = ({
     onRunPreset,
     techniques,
     saveRoutine,
-    deleteRoutine
+    deleteRoutine,
+    sessionRemaining
 }: LayoutProps) => {
-    const props = { isActive, selectedTech, currentStep, currentStepIndex, stepProgress, displaySeconds, sessionStats, controls, todayLog, compliance, onChangeTechnique, onRunPreset, techniques, saveRoutine, deleteRoutine };
+    const props = { isActive, selectedTech, currentStep, currentStepIndex, stepProgress, displaySeconds, sessionStats, controls, todayLog, compliance, onChangeTechnique, onRunPreset, techniques, saveRoutine, deleteRoutine, sessionRemaining };
     const [activeTab, setActiveTab] = useState<'breathe' | 'discover' | 'journey'>('breathe');
     const [showAbout, setShowAbout] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
@@ -91,6 +93,7 @@ export const DesktopLayout = ({
                                     displaySeconds={displaySeconds}
                                     sessionStats={sessionStats}
                                     controls={controls}
+                                    sessionRemaining={props.sessionRemaining}
                                 />
                             </div>
                         </motion.div>
@@ -106,7 +109,6 @@ export const DesktopLayout = ({
                                 <DesktopDiscoverView
                                     techniques={techniques}
                                     onSelectTech={(t) => { onChangeTechnique(t); setActiveTab('breathe'); }}
-                                    onRunPreset={(pid) => { onRunPreset(pid); setActiveTab('breathe'); }}
                                     saveRoutine={props.saveRoutine}
                                     deleteRoutine={props.deleteRoutine}
                                 />
@@ -126,6 +128,7 @@ export const DesktopLayout = ({
                                     compliance={compliance}
                                     dailyLog={todayLog}
                                     onChangeTechnique={() => { }}
+                                    onOpenSettings={() => setShowSettings(true)}
                                 />
                             </div>
                         </motion.div>

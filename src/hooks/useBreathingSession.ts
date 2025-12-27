@@ -172,6 +172,18 @@ export const useBreathingSession = ({
                 }
             }
 
+            // 1. Target Duration Logic for Daily Protocol
+            if (selectedTech.targetDurationSec && totalSeconds + 1 >= selectedTech.targetDurationSec) {
+                // Save last chunk
+                persistSession(totalSeconds + 1, selectedTech);
+                // Stop gracefully
+                setIsActive(false);
+                setCurrentStepIndex(0);
+                setStepProgress(0);
+                // Maybe play a completion sound here? Not requested yet.
+                return; // Stop execution
+            }
+
             // We rely on parent to handle Sleep Mode "soundMode" change via onSleepTrigger
             if (onSleepTriggerRef.current) {
                 // Logic handled in separate effect below for threshold check, 

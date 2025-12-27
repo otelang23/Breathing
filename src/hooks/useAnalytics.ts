@@ -13,6 +13,7 @@ export const useAnalytics = () => {
     const { user } = useAuth();
     const [stats, setStats] = useState<DayStat[]>([]);
     const [userStats, setUserStats] = useState({ streak: 0, totalMinutes: 0 });
+    const [techniqueStats, setTechniqueStats] = useState<Record<string, number>>({});
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -31,6 +32,7 @@ export const useAnalytics = () => {
             }
 
             const dataMap: Record<string, number> = {};
+            const techAgg: Record<string, number> = {}; // Aggregate seconds per technique
 
             if (user) {
                 // 1. Fetch Weekly Data
@@ -58,8 +60,14 @@ export const useAnalytics = () => {
                 snapshots.forEach((snap, i) => {
                     if (snap.exists()) {
                         const val = snap.data();
-                        const totalSecs = Object.values(val.techSeconds || {}).reduce((a: number, b: unknown) => a + (b as number), 0);
+                        const dailyTechSeconds = val.techSeconds || {};
+                        const totalSecs = Object.values(dailyTechSeconds).reduce((a: number, b: unknown) => a + (b as number), 0);
                         dataMap[days[i].date] = Math.floor(totalSecs / 60);
+
+                        // Aggregate Technique Stats
+                        Object.entries(dailyTechSeconds).forEach(([techId, secs]) => {
+                            techAgg[techId] = (techAgg[techId] || 0) + (secs as number);
+                        });
                     }
                 });
 
@@ -78,8 +86,14 @@ export const useAnalytics = () => {
                     days.forEach(d => {
                         const entry = updates[d.date] as { techSeconds?: Record<string, number> } | undefined;
                         if (entry) {
-                            const totalSecs = Object.values(entry.techSeconds || {}).reduce((a: number, b: unknown) => a + (b as number), 0);
+                            const dailyTechSeconds = entry.techSeconds || {};
+                            const totalSecs = Object.values(dailyTechSeconds).reduce((a: number, b: unknown) => a + (b as number), 0);
                             dataMap[d.date] = Math.floor(totalSecs / 60);
+
+                            // Aggregate Technique Stats
+                            Object.entries(dailyTechSeconds).forEach(([techId, secs]) => {
+                                techAgg[techId] = (techAgg[techId] || 0) + (secs as number);
+                            });
                         }
                     });
 
@@ -94,10 +108,17 @@ export const useAnalytics = () => {
                 dayName: d.dayName,
                 minutes: dataMap[d.date] || 0
             })));
+
+            // Convert techAgg seconds to minutes
+            const techMins: Record<string, number> = {};
+            Object.entries(techAgg).forEach(([k, v]) => {
+                techMins[k] = Math.floor(v / 60);
+            });
+            setTechniqueStats(techMins);
         };
 
         fetchStats();
     }, [user]);
 
-    return { stats, userStats };
+    return { stats, userStats, techniqueStats };
 };

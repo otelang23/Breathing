@@ -35,6 +35,8 @@ export class GenerativeAudio {
     private currentProfile: { baseFreq: number; binauralBeat: number } | null = null;
     private baseFreq = 110; // A2
     private targetBinauralFreq = 10; // Alpha default
+    private globalVolume = 0.5;
+    private mode: 'cosmic' | 'nature' | 'focus' = 'cosmic';
 
     public async init() {
         if (this.ctx) return;
@@ -49,10 +51,26 @@ export class GenerativeAudio {
         this.limiter.ratio.value = 12;
 
         this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.value = 0.6; // Safe starting volume
+        this.masterGain.gain.value = this.globalVolume;
 
         this.limiter.connect(this.masterGain);
         this.masterGain.connect(this.ctx.destination);
+    }
+
+    public setVolume(val: number) {
+        this.globalVolume = Math.max(0, Math.min(1, val));
+        if (this.masterGain && this.ctx) {
+            this.masterGain.gain.setTargetAtTime(this.globalVolume, this.ctx.currentTime, 0.1);
+        }
+    }
+
+    public setMode(mode: 'cosmic' | 'nature' | 'focus') {
+        this.mode = mode;
+        if (this.isRunning) {
+            this.teardownLayers();
+            this.buildLayers();
+            this.startTextureLoop();
+        }
     }
 
     public async start() {
@@ -76,7 +94,7 @@ export class GenerativeAudio {
             this.teardownLayers();
             this.isRunning = false;
             // Restore volume for next start
-            if (this.masterGain) this.masterGain.gain.setValueAtTime(0.6, this.ctx!.currentTime);
+            if (this.masterGain) this.masterGain.gain.setValueAtTime(this.globalVolume, this.ctx!.currentTime);
         }, 1100);
     }
 
@@ -85,55 +103,69 @@ export class GenerativeAudio {
         const now = this.ctx.currentTime;
 
         // 1. DRONE LAYER (Three oscillators for "Chorus" effect)
-        this.droneNodes = [];
-        const ratios = [1, 1.5, 2]; // Root, Fifth, Octave
-        ratios.forEach((ratio, i) => {
-            const osc = this.ctx!.createOscillator();
-            const pan = this.ctx!.createStereoPanner();
-            const gain = this.ctx!.createGain();
+        // Cosmic: Full, Focus: Minimal (base only), Nature: Low
+        if (this.mode === 'cosmic' || this.mode === 'focus') {
+            this.droneNodes = [];
+            const ratios = [1, 1.5, 2]; // Root, Fifth, Octave
 
-            osc.type = i === 1 ? 'triangle' : 'sine';
-            osc.frequency.setValueAtTime(this.baseFreq * ratio, now);
-            // Gentle random detune for warmth
-            osc.detune.value = (Math.random() * 10) - 5;
+            // Focus mode only uses root note for clarity
+            const activeRatios = this.mode === 'focus' ? [1] : ratios;
 
-            // Spread panorama
-            // Spread panorama
-            let panVal = 0;
-            if (i === 1) panVal = -0.3;
-            else if (i === 2) panVal = 0.3;
-            pan.pan.value = panVal;
+            activeRatios.forEach((ratio, i) => {
+                const osc = this.ctx!.createOscillator();
+                const panNode = this.ctx!.createStereoPanner();
+                const gain = this.ctx!.createGain();
 
-            gain.gain.value = 0; // Fade in
-            gain.gain.linearRampToValueAtTime(0.15 / (i + 1), now + 3);
+                osc.type = i === 1 ? 'triangle' : 'sine';
+                osc.frequency.setValueAtTime(this.baseFreq * ratio, now);
+                // Gentle random detune for warmth
+                osc.detune.value = (Math.random() * 10) - 5;
 
-            osc.connect(pan).connect(gain).connect(this.limiter!);
-            osc.start();
-            this.droneNodes.push({ osc, pan, gain });
-        });
+                // Spread panorama
+                let panVal = 0;
+                if (i === 1) panVal = -0.3;
+                else if (i === 2) panVal = 0.3;
+                panNode.pan.value = panVal;
 
-        // 2. ATMOSPHERE LAYER (Pink Noise)
-        const buffer = this.createPinkNoise(5); // 5 sec buffer
-        const source = this.ctx.createBufferSource();
-        source.buffer = buffer;
-        source.loop = true;
+                gain.gain.value = 0; // Fade in
+                const maxGain = this.mode === 'focus' ? 0.1 : (0.15 / (i + 1));
+                gain.gain.linearRampToValueAtTime(maxGain, now + 3);
 
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 200; // Start Dark
+                osc.connect(panNode).connect(gain).connect(this.limiter!);
+                osc.start();
+                this.droneNodes.push({ osc, pan: panNode, gain });
+            });
+        }
 
-        const pan = this.ctx.createStereoPanner();
-        const gain = this.ctx.createGain();
-        gain.gain.value = 0;
-        gain.gain.linearRampToValueAtTime(0.08, now + 4);
+        // 2. ATMOSPHERE LAYER (Pink Noise) - "Wind/Space"
+        // Nature: Prominent, Cosmic: Subtle, Focus: Off
+        if (this.mode !== 'focus') {
+            const buffer = this.createPinkNoise(5); // 5 sec buffer
+            const source = this.ctx.createBufferSource();
+            source.buffer = buffer;
+            source.loop = true;
 
-        source.connect(filter).connect(pan).connect(gain).connect(this.limiter);
-        source.start();
-        this.atmosphere = { source, filter, gain, pan };
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            // Nature uses higher cutoff for "windy" feel
+            filter.frequency.value = this.mode === 'nature' ? 400 : 200;
 
-        // 3. BINAURAL LAYER
+            const panNode = this.ctx.createStereoPanner();
+            const gain = this.ctx.createGain();
+            gain.gain.value = 0;
+
+            const targetGain = this.mode === 'nature' ? 0.15 : 0.08;
+            gain.gain.linearRampToValueAtTime(targetGain, now + 4);
+
+            source.connect(filter).connect(panNode).connect(gain).connect(this.limiter);
+            source.start();
+            this.atmosphere = { source, filter, gain, pan: panNode };
+        }
+
+        // 3. BINAURAL LAYER (Always active for benefits)
         this.updateBinauralFreq(); // Set initial freq
     }
+
     private teardownLayers() {
         this.droneNodes.forEach(n => { n.osc.stop(); n.osc.disconnect(); });
         this.droneNodes = [];
@@ -144,6 +176,8 @@ export class GenerativeAudio {
             this.atmosphere = null;
         }
 
+        // Keep binaural running or restart it? 
+        // For simplicity, we restart everything on mode switch.
         if (this.binaural) {
             this.binaural.left.stop();
             this.binaural.right.stop();
@@ -249,6 +283,9 @@ export class GenerativeAudio {
 
     // --- TEXTURE LAYER (Random Sparkles) ---
     private startTextureLoop() {
+        // Focus mode: No random distractions
+        if (this.mode === 'focus') return;
+
         const loop = () => {
             if (!this.isRunning) return;
             this.playSparkle();
