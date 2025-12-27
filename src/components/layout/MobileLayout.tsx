@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LiquidNav } from './LiquidNav';
+import { MobileNav } from './MobileNav';
 import { BreatheView } from '../views/BreatheView';
 import { DiscoverView } from '../views/DiscoverView';
 import { Settings } from 'lucide-react';
@@ -115,7 +115,7 @@ export const MobileLayout = ({
                     )}
                 </AnimatePresence>
             </main>
-            <LiquidNav activeTab={activeTab} onChange={setActiveTab} />
+            <MobileNav activeTab={activeTab} onChange={setActiveTab} />
 
             <AnimatePresence>
                 {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}

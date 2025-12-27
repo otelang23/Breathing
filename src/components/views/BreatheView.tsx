@@ -257,7 +257,7 @@ export const BreatheView = ({
             </div>
 
             {/* Main Controls - Premium Glass Buttons */}
-            <div className="w-full flex justify-center gap-8 z-20 pb-36 md:pb-12 shrink-0">
+            <div className="w-full flex justify-center gap-8 z-20 pb-28 md:pb-12 shrink-0">
                 <AnimatePresence mode="wait">
                     {!isActive ? (
                         <motion.button
